@@ -217,8 +217,18 @@ public class DemoDataSeeder implements ApplicationRunner {
     // ── Entry point ──────────────────────────────────────────────────────────
 
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
+        // NOTE: No @Transactional here on purpose.
+        //
+        // With @Transactional the JdbcTemplate deletes and the JPA inserts all share
+        // the same connection (DataSourceUtils enrolls the JDBC connection into the
+        // active JPA transaction and sets autoCommit=false). Any unchecked exception
+        // from any seed method then rolls back EVERYTHING — including the deletes —
+        // leaving the old data intact. Removing the outer transaction means:
+        //   • JdbcTemplate statements each auto-commit immediately
+        //   • Spring Data save() / saveAll() each commit in their own micro-transaction
+        //   • A failure in one phase leaves partial data, but re-running the seeder
+        //     cleans it up on the next pass.
         TenantContext.set(TENANT);
         try {
             log.info("╔══════════════════════════════════════════════════════════╗");
@@ -310,7 +320,11 @@ public class DemoDataSeeder implements ApplicationRunner {
             "DELETE FROM stock_receipts",
         };
         for (String sql : deletes) {
-            jdbc.execute(sql);
+            try {
+                jdbc.execute(sql);
+            } catch (Exception ex) {
+                log.warn("[DemoSeeder] Skipping failed cleanup statement: {} — {}", sql, ex.getMessage());
+            }
         }
         log.info("[DemoSeeder] Old data cleared.");
     }
