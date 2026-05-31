@@ -1,0 +1,13 @@
+# ── Screenshots ──────────────────────────────────────────────────────────────
+screenshot/
+
+# ── Documents folder: ignore everything except the architecture report ────────
+Documents/*
+!Documents/SmartHospital_Architecture_Report.docx
+
+# ── OS / editor noise ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
