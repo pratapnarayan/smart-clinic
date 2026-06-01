@@ -4,6 +4,7 @@ import com.smarthospital.shared.dto.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -71,6 +72,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ApiResponse.error(error));
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        String message = extractConstraintMessage(ex);
+        ErrorResponse error = ErrorResponse.builder()
+                .code("DATA_CONFLICT")
+                .message(message)
+                .timestamp(Instant.now())
+                .build();
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(error));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
         ErrorResponse error = ErrorResponse.builder()
@@ -90,5 +102,29 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
         return ResponseEntity.internalServerError().body(ApiResponse.error(error));
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static String extractConstraintMessage(DataIntegrityViolationException ex) {
+        String cause = ex.getMostSpecificCause().getMessage();
+        if (cause == null) return "A duplicate or invalid record was detected";
+        // PostgreSQL unique-violation messages contain "Key (column)=(value) already exists"
+        if (cause.contains("already exists")) {
+            int keyStart = cause.indexOf("Key (");
+            if (keyStart >= 0) {
+                return "Duplicate value: " + cause.substring(keyStart);
+            }
+            return "A record with this value already exists";
+        }
+        // FK violation: "is not present in table"
+        if (cause.contains("is not present in table")) {
+            return "Referenced record does not exist";
+        }
+        // NOT NULL violation
+        if (cause.contains("null value in column")) {
+            return "A required field is missing";
+        }
+        return "A data integrity constraint was violated";
     }
 }
