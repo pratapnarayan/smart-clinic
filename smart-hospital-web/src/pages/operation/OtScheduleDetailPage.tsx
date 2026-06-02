@@ -135,7 +135,7 @@ export function OtScheduleDetailPage() {
                 onClick={() => Modal.confirm({
                   title: 'Postpone Operation',
                   content: 'Mark this operation as postponed?',
-                  onOk: () => postpone(),
+                  onOk: () => postpone(undefined),
                 })}>
                 Postpone
               </Button>
@@ -146,7 +146,7 @@ export function OtScheduleDetailPage() {
                   title: 'Cancel Operation',
                   content: 'Cancel this operation? This cannot be undone.',
                   okType: 'danger', okText: 'Cancel Operation',
-                  onOk: () => cancel(),
+                  onOk: () => cancel(undefined),
                 })}>
                 Cancel
               </Button>

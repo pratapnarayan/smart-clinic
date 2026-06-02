@@ -89,7 +89,7 @@ export function AppointmentFormModal({ open, onClose, patientId, patientName }: 
     const { _date, ...rest } = values
     const payload = Object.fromEntries(
       Object.entries(rest).filter(([, v]) => v !== '' && v != null)
-    ) as BookAppointmentPayload
+    ) as unknown as BookAppointmentPayload
     book({ ...payload, appointmentDate: _date.format('YYYY-MM-DD') }, { onSuccess: onClose })
   }
 

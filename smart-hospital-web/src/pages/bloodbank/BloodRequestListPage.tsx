@@ -75,7 +75,7 @@ export function BloodRequestListPage() {
       render: (v: ComponentType) => COMPONENT_LABELS[v],
     },
     {
-      title: 'Units', key: 'units', width: 80, align: 'center',
+      title: 'Units', key: 'units', width: 80, align: 'center' as const,
       render: (_: unknown, r: BloodRequest) => (
         <Badge
           count={`${r.unitsIssued}/${r.unitsRequired}`}

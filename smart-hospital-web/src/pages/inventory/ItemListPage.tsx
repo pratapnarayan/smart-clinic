@@ -54,7 +54,7 @@ export function ItemListPage() {
     { title: 'Category', dataIndex: 'categoryName', width: 160 },
     { title: 'Unit',     dataIndex: 'unit', width: 70 },
     {
-      title: 'Stock', dataIndex: 'currentStock', width: 100, align: 'right',
+      title: 'Stock', dataIndex: 'currentStock', width: 100, align: 'right' as const,
       render: (v: number, r: InventoryItem) => (
         <Tag color={v === 0 ? 'red' : r.lowStock ? 'orange' : 'green'}>
           {r.lowStock && <WarningOutlined style={{ marginRight: 4 }} />}
@@ -62,7 +62,7 @@ export function ItemListPage() {
         </Tag>
       ),
     },
-    { title: 'Reorder @', dataIndex: 'reorderLevel', width: 90, align: 'right',
+    { title: 'Reorder @', dataIndex: 'reorderLevel', width: 90, align: 'right' as const,
       render: (v: number, r: InventoryItem) => `${v} ${r.unit}` },
     hasPermission('INVENTORY.CREATE') ? {
       title: 'Actions', key: 'actions', width: 180,
