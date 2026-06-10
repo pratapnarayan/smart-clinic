@@ -69,9 +69,9 @@ function AddBatchModal({ medicine, onClose }: { medicine: Medicine | null; onClo
             { required: true, message: 'Select expiry date' },
             {
               validator: (_, v) =>
-                v && (v as dayjs.Dayjs).isAfter(dayjs())
+                v && !(v as dayjs.Dayjs).isBefore(dayjs(), 'day')
                   ? Promise.resolve()
-                  : Promise.reject(new Error('Expiry date must be in the future')),
+                  : Promise.reject(new Error('Expiry date must be today or in the future')),
             },
           ]}
         >

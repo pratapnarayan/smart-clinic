@@ -94,6 +94,7 @@ export function useUpdateDoctor(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.doctor(id) })
       qc.invalidateQueries({ queryKey: ['doctor', 'doctors'] })
+      qc.invalidateQueries({ queryKey: KEYS.dashboard })
       message.success('Doctor profile updated')
     },
     onError: () => message.error('Failed to update doctor profile'),

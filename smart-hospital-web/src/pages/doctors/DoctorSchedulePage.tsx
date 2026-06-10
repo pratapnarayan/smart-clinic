@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Card, Button, TimePicker, Select, InputNumber, Table, Space, Alert, Spin } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
@@ -18,19 +18,19 @@ export function DoctorSchedulePage() {
   const { data: schedules = [], isLoading: loadingSched } = useDoctorSchedules(id!)
   const { mutate: save, isPending: saving }             = useSaveDoctorSchedules(id!)
 
-  const [rows, setRows]             = useState<SlotRow[]>([])
-  const [initialized, setInitialized] = useState(false)
+  const [rows, setRows] = useState<SlotRow[]>([])
 
-  if (!initialized && schedules.length > 0) {
-    setRows(schedules.map((s, i) => ({
-      key: String(i),
-      dayOfWeek: s.dayOfWeek,
-      shiftStart: s.shiftStart,
-      shiftEnd: s.shiftEnd,
-      slotDurationMins: s.slotDurationMins,
-    })))
-    setInitialized(true)
-  }
+  useEffect(() => {
+    if (schedules.length > 0) {
+      setRows(schedules.map((s, i) => ({
+        key: String(i),
+        dayOfWeek: s.dayOfWeek,
+        shiftStart: s.shiftStart,
+        shiftEnd: s.shiftEnd,
+        slotDurationMins: s.slotDurationMins,
+      })))
+    }
+  }, [schedules])
 
   const addRow = () => setRows(prev => [
     ...prev,

@@ -63,6 +63,7 @@ export function useAddBatch() {
       qc.invalidateQueries({ queryKey: PHARMA_KEYS.stock(vars.medicineId) })
       qc.invalidateQueries({ queryKey: ['pharma', 'medicines'] })
       qc.invalidateQueries({ queryKey: PHARMA_KEYS.lowStock })
+      qc.invalidateQueries({ queryKey: ['pharma', 'expiring'] })
       message.success('Batch added — stock updated')
     },
     onError: () => { message.error('Failed to add batch') },

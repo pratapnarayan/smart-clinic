@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Modal, Form, Input, InputNumber, Select, Switch, Row, Col } from 'antd'
 import { useCreateDoctor, useUpdateDoctor, useSpecializations } from '@/hooks/useDoctor'
 import { useEmployees } from '@/hooks/useHr'
@@ -17,8 +17,9 @@ export function DoctorProfileModal({ open, onClose, doctor, employeeId, employee
   const isEdit = !!doctor
   const prefilledEmployee = !!employeeId && !isEdit
 
+  const [employeeSearch, setEmployeeSearch]             = useState('')
   const { data: specs = [] }                            = useSpecializations()
-  const { data: employeesPage }                         = useEmployees(undefined, undefined, 0)
+  const { data: employeesPage }                         = useEmployees(undefined, employeeSearch || undefined, 0)
   const { mutate: create, isPending: creating }         = useCreateDoctor()
   const { mutate: update, isPending: updating }         = useUpdateDoctor(doctor?.id ?? '')
 
@@ -67,10 +68,9 @@ export function DoctorProfileModal({ open, onClose, doctor, employeeId, employee
             ) : (
               <Select
                 showSearch
-                placeholder="Select an employee"
-                filterOption={(input, option) =>
-                  (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
-                }
+                placeholder="Type to search employee…"
+                filterOption={false}
+                onSearch={setEmployeeSearch}
                 options={(employeesPage?.content ?? []).map(e => ({
                   value: e.id,
                   label: `${e.employeeCode} — ${e.firstName} ${e.lastName}`,

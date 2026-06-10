@@ -1,5 +1,6 @@
 package com.smarthospital.modules.doctor.controller;
 
+import com.smarthospital.core.exception.ApiException;
 import com.smarthospital.core.pagination.PageResponse;
 import com.smarthospital.modules.doctor.dto.*;
 import com.smarthospital.modules.doctor.service.DoctorService;
@@ -64,9 +65,10 @@ public class DoctorController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) UUID departmentId,
             @RequestParam(required = false) UUID specializationId,
-            @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "20") int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+            @RequestParam(defaultValue = "0")   int page,
+            @RequestParam(defaultValue = "20")  int size) {
+        int clampedSize = Math.min(Math.max(size, 1), 100);
+        PageRequest pageable = PageRequest.of(page, clampedSize, Sort.by("id").ascending());
         return ResponseEntity.ok(ApiResponse.ok(service.listDoctors(search, departmentId, specializationId, pageable)));
     }
 
@@ -100,8 +102,14 @@ public class DoctorController {
     public ResponseEntity<ApiResponse<DoctorProfileResponse>> uploadDoctorPhoto(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {
+        service.getDoctor(id);  // verify exists → 404 before writing to storage
         String url = fileStorage.store(file, "doc_" + id);
-        return ResponseEntity.ok(ApiResponse.ok(service.updateDoctorPhoto(id, url)));
+        try {
+            return ResponseEntity.ok(ApiResponse.ok(service.updateDoctorPhoto(id, url)));
+        } catch (Exception e) {
+            fileStorage.delete(url);
+            throw e;
+        }
     }
 
     // ── Schedules ────────────────────────────────────────────────────────────
@@ -129,6 +137,9 @@ public class DoctorController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         LocalDate start = from != null ? from : LocalDate.now();
         LocalDate end   = to   != null ? to   : start.plusDays(30);
+        if (end.isBefore(start)) {
+            throw ApiException.badRequest("INVALID_DATE_RANGE", "'to' date must not be before 'from' date");
+        }
         return ResponseEntity.ok(ApiResponse.ok(service.getAvailableSlots(id, start, end)));
     }
 

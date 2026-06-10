@@ -120,8 +120,14 @@ public class HrController {
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadEmployeePhoto(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {
+        hrService.getEmployee(id);  // verify exists → 404 before writing to storage
         String url = fileStorage.store(file, "emp_" + id);
-        return ResponseEntity.ok(ApiResponse.ok(hrService.updateEmployeePhoto(id, url)));
+        try {
+            return ResponseEntity.ok(ApiResponse.ok(hrService.updateEmployeePhoto(id, url)));
+        } catch (Exception e) {
+            fileStorage.delete(url);
+            throw e;
+        }
     }
 
     @DeleteMapping("/employees/{id}")

@@ -69,6 +69,9 @@ public class DoctorService {
     public SpecializationResponse updateSpecialization(UUID id, SpecializationRequest req) {
         Specialization s = specRepo.findById(id)
             .orElseThrow(() -> ApiException.notFound("SPEC_NOT_FOUND", "Specialization not found"));
+        if (!s.getName().equalsIgnoreCase(req.name()) && specRepo.existsByNameIgnoreCase(req.name())) {
+            throw ApiException.conflict("SPEC_EXISTS", "Specialization already exists: " + req.name());
+        }
         s.setName(req.name());
         s.setCode(req.code().toUpperCase());
         s.setDescription(req.description());
@@ -123,8 +126,14 @@ public class DoctorService {
             .displayOnPortal(req.displayOnPortal() != null ? req.displayOnPortal() : true)
             .build();
         if (req.specializationIds() != null && !req.specializationIds().isEmpty()) {
-            Set<Specialization> specs = new HashSet<>(specRepo.findAllById(req.specializationIds()));
-            p.setSpecializations(specs);
+            List<Specialization> found = new ArrayList<>(specRepo.findAllById(req.specializationIds()));
+            if (found.size() != req.specializationIds().size()) {
+                Set<UUID> foundIds = found.stream().map(Specialization::getId).collect(Collectors.toSet());
+                List<UUID> missing = req.specializationIds().stream()
+                    .filter(sid -> !foundIds.contains(sid)).toList();
+                throw ApiException.badRequest("SPEC_NOT_FOUND", "Unknown specialization IDs: " + missing);
+            }
+            p.setSpecializations(new HashSet<>(found));
         }
         DoctorProfile saved = doctorRepo.save(p);
         log.info("Doctor profile created for employee {}", emp.getEmployeeCode());
@@ -150,9 +159,19 @@ public class DoctorService {
         if (req.publications()        != null) p.setPublications(req.publications());
         if (req.onlineBookingEnabled()!= null) p.setOnlineBookingEnabled(req.onlineBookingEnabled());
         if (req.displayOnPortal()     != null) p.setDisplayOnPortal(req.displayOnPortal());
-        if (req.specializationIds()   != null) {
-            Set<Specialization> specs = new HashSet<>(specRepo.findAllById(req.specializationIds()));
-            p.setSpecializations(specs);
+        if (req.specializationIds() != null) {
+            if (!req.specializationIds().isEmpty()) {
+                List<Specialization> found = new ArrayList<>(specRepo.findAllById(req.specializationIds()));
+                if (found.size() != req.specializationIds().size()) {
+                    Set<UUID> foundIds = found.stream().map(Specialization::getId).collect(Collectors.toSet());
+                    List<UUID> missing = req.specializationIds().stream()
+                        .filter(sid -> !foundIds.contains(sid)).toList();
+                    throw ApiException.badRequest("SPEC_NOT_FOUND", "Unknown specialization IDs: " + missing);
+                }
+                p.setSpecializations(new HashSet<>(found));
+            } else {
+                p.setSpecializations(new HashSet<>());
+            }
         }
         return DoctorProfileResponse.from(doctorRepo.save(p), emp);
     }
