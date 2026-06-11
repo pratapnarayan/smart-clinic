@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+
 public interface MedicineBatchRepository extends JpaRepository<MedicineBatch, UUID> {
 
     List<MedicineBatch> findByMedicineIdOrderByExpiryDateAsc(UUID medicineId);
@@ -30,4 +31,38 @@ public interface MedicineBatchRepository extends JpaRepository<MedicineBatch, UU
            "WHERE b.medicine.id = :medicineId AND b.expiryDate > :today")
     int totalAvailableStock(@Param("medicineId") UUID medicineId,
                             @Param("today") LocalDate today);
+
+    // ── Analytics queries ────────────────────────────────────────────────────
+
+    /**
+     * Count of batches where quantity <= medicine.reorder_level (low stock).
+     * Joins medicines table to get per-medicine reorder level.
+     */
+    @Query(value = "SELECT COUNT(*) FROM medicine_batches mb " +
+                   "JOIN medicines m ON m.id = mb.medicine_id AND m.deleted_at IS NULL " +
+                   "WHERE mb.quantity <= m.reorder_level AND mb.quantity > 0",
+           nativeQuery = true)
+    long countLowStockBatches();
+
+    /**
+     * Count of batches expiring within the next :days days with remaining stock.
+     */
+    @Query("SELECT COUNT(b) FROM MedicineBatch b " +
+           "WHERE b.quantity > 0 AND b.expiryDate <= :cutoff AND b.expiryDate >= :today")
+    long countExpiringBatches(@Param("today") LocalDate today,
+                              @Param("cutoff") LocalDate cutoff);
+
+    /**
+     * Stock health counts: inStock (qty>10), low (qty 1-10), out (qty=0).
+     * Returns Object[] { label(String), count(Long) }
+     */
+    @Query(value = "SELECT " +
+                   "  CASE WHEN quantity > 10 THEN 'In Stock' " +
+                   "       WHEN quantity > 0  THEN 'Low' " +
+                   "       ELSE 'Out of Stock' END AS label, " +
+                   "  COUNT(*) " +
+                   "FROM medicine_batches " +
+                   "GROUP BY label",
+           nativeQuery = true)
+    List<Object[]> stockHealthDistribution();
 }
