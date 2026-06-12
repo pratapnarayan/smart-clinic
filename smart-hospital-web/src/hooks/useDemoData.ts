@@ -213,12 +213,13 @@ export const DEMO_INVENTORY: InventoryAnalytics = {
   ],
 }
 
-// Helper: returns demo data when real data is all-zeros (empty database)
+// Helper: returns demo data when real data is all-zeros OR ?demo=true is in the URL
 export function withDemoFallback<T extends object>(
   data: T | undefined,
   demoData: T
 ): { data: T; isDemo: boolean } {
-  if (!data || isEmptyData(data as Record<string, unknown>)) {
+  const forceDemo = new URLSearchParams(window.location.search).get('demo') === 'true'
+  if (forceDemo || !data || isEmptyData(data as Record<string, unknown>)) {
     return { data: demoData, isDemo: true }
   }
   return { data, isDemo: false }
