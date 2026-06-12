@@ -149,19 +149,17 @@ public class AnalyticsController {
         String title = section.substring(0, 1).toUpperCase() + section.substring(1) + " Analytics";
         String dateRange = range[0] + " to " + range[1];
 
-        // Build generic export rows based on section
-        List<String> headers = List.of("Metric", "Value", "Period");
-        List<List<Object>> rows = buildExportRows(section, range[0], range[1]);
-
         byte[] data;
         String mediaType;
         String filename;
 
         if ("pdf".equalsIgnoreCase(format)) {
-            data = PdfExportUtil.build(title + " (" + dateRange + ")", headers, rows, generatedBy);
+            data = buildRichPdf(section, range[0], range[1], dateRange, generatedBy);
             mediaType = "application/pdf";
             filename = section + "-analytics.pdf";
         } else {
+            List<String> headers = List.of("Metric", "Value", "Period");
+            List<List<Object>> rows = buildExportRows(section, range[0], range[1]);
             data = ExcelExportUtil.build(title + " (" + dateRange + ")", headers, rows, generatedBy);
             mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             filename = section + "-analytics.xlsx";
@@ -171,6 +169,30 @@ public class AnalyticsController {
                 .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
                 .header("Content-Type", mediaType)
                 .body(data);
+    }
+
+    private byte[] buildRichPdf(String section, LocalDate from, LocalDate to,
+                                String dateRange, String generatedBy) {
+        return switch (section.toLowerCase()) {
+            case "executive" -> PdfExportUtil.buildExecutive(
+                    executiveDashboardService.getDashboard(), dateRange, generatedBy);
+            case "finance" -> PdfExportUtil.buildFinance(
+                    financeAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "patients" -> PdfExportUtil.buildPatients(
+                    patientAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "doctors" -> PdfExportUtil.buildDoctors(
+                    doctorAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "appointments" -> PdfExportUtil.buildAppointments(
+                    appointmentAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "pharmacy" -> PdfExportUtil.buildPharmacy(
+                    pharmacyAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "laboratory" -> PdfExportUtil.buildLaboratory(
+                    pathologyAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "inventory" -> PdfExportUtil.buildInventory(
+                    inventoryAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            default -> PdfExportUtil.buildExecutive(
+                    executiveDashboardService.getDashboard(), dateRange, generatedBy);
+        };
     }
 
     private List<List<Object>> buildExportRows(String section, LocalDate from, LocalDate to) {
