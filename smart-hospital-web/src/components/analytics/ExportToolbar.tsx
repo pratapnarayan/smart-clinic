@@ -1,6 +1,8 @@
 import { Space, Button, Tag, Tooltip } from 'antd'
 import { FileExcelOutlined, FilePdfOutlined, PrinterOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { apiClient } from '@/api/client'
 
 interface ExportToolbarProps {
   section: string
@@ -9,20 +11,31 @@ interface ExportToolbarProps {
 
 export function ExportToolbar({ section, isDemoData }: ExportToolbarProps) {
   const [params] = useSearchParams()
+  const [loading, setLoading] = useState<string | null>(null)
 
   const from = params.get('from') ?? ''
   const to = params.get('to') ?? ''
 
-  const buildUrl = (format: string) => {
-    const base = `/api/v1/analytics/export/${section}`
-    const qp = new URLSearchParams({ format })
-    if (from) qp.set('from', from)
-    if (to) qp.set('to', to)
-    return `${base}?${qp.toString()}`
-  }
-
-  const handleDownload = (format: string) => {
-    window.open(buildUrl(format), '_blank')
+  const handleDownload = async (format: string) => {
+    setLoading(format)
+    try {
+      const qp: Record<string, string> = { format }
+      if (from) qp.from = from
+      if (to) qp.to = to
+      const res = await apiClient.get(`/v1/analytics/export/${section}`, {
+        params: qp,
+        responseType: 'blob',
+      })
+      const ext = format === 'excel' ? 'xlsx' : 'pdf'
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${section}-analytics.${ext}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setLoading(null)
+    }
   }
 
   return (
@@ -35,6 +48,7 @@ export function ExportToolbar({ section, isDemoData }: ExportToolbarProps) {
       <Button
         icon={<FileExcelOutlined />}
         onClick={() => handleDownload('excel')}
+        loading={loading === 'excel'}
         size="small"
       >
         Excel
@@ -42,6 +56,7 @@ export function ExportToolbar({ section, isDemoData }: ExportToolbarProps) {
       <Button
         icon={<FilePdfOutlined />}
         onClick={() => handleDownload('pdf')}
+        loading={loading === 'pdf'}
         size="small"
         danger
       >
