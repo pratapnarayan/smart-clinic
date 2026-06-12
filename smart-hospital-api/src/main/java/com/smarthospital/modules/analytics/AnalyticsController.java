@@ -22,7 +22,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/analytics")
@@ -158,9 +157,7 @@ public class AnalyticsController {
             mediaType = "application/pdf";
             filename = section + "-analytics.pdf";
         } else {
-            List<String> headers = List.of("Metric", "Value", "Period");
-            List<List<Object>> rows = buildExportRows(section, range[0], range[1]);
-            data = ExcelExportUtil.build(title + " (" + dateRange + ")", headers, rows, generatedBy);
+            data = buildRichExcel(section, range[0], range[1], dateRange, generatedBy);
             mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             filename = section + "-analytics.xlsx";
         }
@@ -169,6 +166,30 @@ public class AnalyticsController {
                 .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
                 .header("Content-Type", mediaType)
                 .body(data);
+    }
+
+    private byte[] buildRichExcel(String section, LocalDate from, LocalDate to,
+                                  String dateRange, String generatedBy) {
+        return switch (section.toLowerCase()) {
+            case "executive"    -> ExcelExportUtil.buildExecutive(
+                    executiveDashboardService.getDashboard(), dateRange, generatedBy);
+            case "finance"      -> ExcelExportUtil.buildFinance(
+                    financeAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "patients"     -> ExcelExportUtil.buildPatients(
+                    patientAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "doctors"      -> ExcelExportUtil.buildDoctors(
+                    doctorAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "appointments" -> ExcelExportUtil.buildAppointments(
+                    appointmentAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "pharmacy"     -> ExcelExportUtil.buildPharmacy(
+                    pharmacyAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "laboratory"   -> ExcelExportUtil.buildLaboratory(
+                    pathologyAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            case "inventory"    -> ExcelExportUtil.buildInventory(
+                    inventoryAnalytics.getAnalytics(from, to), dateRange, generatedBy);
+            default             -> ExcelExportUtil.buildExecutive(
+                    executiveDashboardService.getDashboard(), dateRange, generatedBy);
+        };
     }
 
     private byte[] buildRichPdf(String section, LocalDate from, LocalDate to,
@@ -195,82 +216,7 @@ public class AnalyticsController {
         };
     }
 
-    private List<List<Object>> buildExportRows(String section, LocalDate from, LocalDate to) {
-        String period = from + " to " + to;
-        return switch (section.toLowerCase()) {
-            case "finance" -> {
-                var d = financeAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Total Revenue", d.totalRevenue(), period),
-                    List.of("Total Expenses", d.totalExpenses(), period),
-                    List.of("Net Profit", d.netProfit(), period),
-                    List.of("Collection Efficiency %", d.collectionEfficiencyPct(), period)
-                );
-            }
-            case "patients" -> {
-                var d = patientAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Total Patients", d.totalPatients(), period),
-                    List.of("New Patients", d.newPatientsThisPeriod(), period),
-                    List.of("Returning Patients", d.returningPatients(), period),
-                    List.of("Retention Rate %", d.retentionRatePct(), period)
-                );
-            }
-            case "doctors" -> {
-                var d = doctorAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Total Doctors", d.totalDoctors(), period),
-                    List.of("Active Doctors", d.activeDoctors(), period)
-                );
-            }
-            case "appointments" -> {
-                var d = appointmentAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Total Appointments", d.totalAppointments(), period),
-                    List.of("Completed", d.completed(), period),
-                    List.of("Cancelled", d.cancelled(), period),
-                    List.of("No Show", d.noShow(), period)
-                );
-            }
-            case "pharmacy" -> {
-                var d = pharmacyAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Total Revenue", d.totalMedicineRevenue(), period),
-                    List.of("Bills Issued", d.totalBillsIssued(), period),
-                    List.of("Low Stock Alerts", d.lowStockAlerts(), period),
-                    List.of("Expiry Alerts", d.expiryAlerts(), period)
-                );
-            }
-            case "laboratory" -> {
-                var d = pathologyAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Tests Performed", d.totalTestsPerformed(), period),
-                    List.of("Total Revenue", d.totalRevenue(), period),
-                    List.of("Pending Reports", d.pendingReports(), period)
-                );
-            }
-            case "inventory" -> {
-                var d = inventoryAnalytics.getAnalytics(from, to);
-                yield List.of(
-                    List.of("Total Stock Value", d.totalStockValue(), period),
-                    List.of("Low Stock Items", d.lowStockItems(), period),
-                    List.of("Out of Stock", d.outOfStockItems(), period),
-                    List.of("Total Items", d.totalItems(), period)
-                );
-            }
-            default -> {
-                var exec = executiveDashboardService.getDashboard();
-                yield List.of(
-                    List.of("Today's Revenue", exec.todayRevenue(), "Today"),
-                    List.of("Month Revenue", exec.monthRevenue(), "This Month"),
-                    List.of("Total Patients", exec.totalPatients(), "All Time"),
-                    List.of("Today's Appointments", exec.todayAppointments(), "Today")
-                );
-            }
-        };
-    }
-
-    // Default range: last 30 days
+// Default range: last 30 days
     private LocalDate[] resolveRange(LocalDate from, LocalDate to) {
         LocalDate end   = to   != null ? to   : LocalDate.now();
         LocalDate start = from != null ? from : end.minusDays(29);
