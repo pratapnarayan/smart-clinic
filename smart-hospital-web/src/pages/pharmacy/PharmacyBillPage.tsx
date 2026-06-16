@@ -197,6 +197,11 @@ export function PharmacyBillPage() {
     setItems((prev) => prev.filter((i) => i.batchId !== batchId))
   }
 
+  function updateQty(batchId: string, qty: number) {
+    if (qty < 1) return
+    setItems((prev) => prev.map((i) => i.batchId === batchId ? { ...i, quantity: qty } : i))
+  }
+
   function handleSubmit() {
     const patientId = form.getFieldValue('patientId')
     const paymentMode = form.getFieldValue('paymentMode') ?? 'CASH'
@@ -221,7 +226,19 @@ export function PharmacyBillPage() {
   const lineColumns: TableProps<BillLineItem>['columns'] = [
     { title: 'Medicine', dataIndex: 'medicineName' },
     { title: 'Batch', dataIndex: 'batchNumber' },
-    { title: 'Qty', dataIndex: 'quantity', align: 'right' },
+    {
+      title: 'Qty', dataIndex: 'quantity', align: 'right', width: 100,
+      render: (qty: number, r: BillLineItem) => (
+        <InputNumber
+          min={1}
+          precision={0}
+          value={qty}
+          onChange={(v) => updateQty(r.batchId, v ?? 1)}
+          size="small"
+          style={{ width: 72 }}
+        />
+      ),
+    },
     { title: 'Unit Price', dataIndex: 'unitPrice', render: formatCurrency, align: 'right' },
     {
       title: 'Total', key: 'total',

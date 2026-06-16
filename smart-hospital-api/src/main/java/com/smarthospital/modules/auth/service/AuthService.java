@@ -143,6 +143,9 @@ public class AuthService {
                     Permission.OPERATION_EDIT, Permission.OPERATION_MANAGE,
                     Permission.DOCTOR_VIEW, Permission.DOCTOR_CREATE,
                     Permission.DOCTOR_EDIT, Permission.DOCTOR_MANAGE,
+                    Permission.CLINIC_HOME_COLLECTION_VIEW, Permission.CLINIC_HOME_COLLECTION_CREATE,
+                    Permission.CLINIC_HOME_COLLECTION_EDIT,
+                    Permission.CLINIC_BILL_VIEW, Permission.CLINIC_BILL_CREATE, Permission.CLINIC_BILL_MANAGE,
                     Permission.REPORTS_VIEW);
             case DOCTOR      -> List.of(
                     Permission.PATIENT_VIEW,
@@ -151,7 +154,9 @@ public class AuthService {
                     Permission.PATHOLOGY_VIEW, Permission.PATHOLOGY_CREATE,
                     Permission.RADIOLOGY_VIEW, Permission.RADIOLOGY_CREATE,
                     Permission.OPERATION_VIEW, Permission.OPERATION_CREATE, Permission.OPERATION_EDIT,
-                    Permission.DOCTOR_VIEW, Permission.DOCTOR_EDIT);
+                    Permission.DOCTOR_VIEW, Permission.DOCTOR_EDIT,
+                    Permission.CLINIC_HOME_COLLECTION_VIEW,
+                    Permission.CLINIC_BILL_VIEW);
             case NURSE       -> List.of(
                     Permission.PATIENT_VIEW, Permission.OPD_VIEW,
                     Permission.PATHOLOGY_VIEW, Permission.RADIOLOGY_VIEW,
@@ -162,14 +167,18 @@ public class AuthService {
             case RECEPTIONIST -> List.of(
                     Permission.PATIENT_VIEW, Permission.PATIENT_CREATE,
                     Permission.FRONTOFFICE_VIEW, Permission.FRONTOFFICE_CREATE, Permission.FRONTOFFICE_EDIT,
-                    Permission.DOCTOR_VIEW);
+                    Permission.DOCTOR_VIEW,
+                    Permission.CLINIC_HOME_COLLECTION_VIEW, Permission.CLINIC_HOME_COLLECTION_CREATE,
+                    Permission.CLINIC_HOME_COLLECTION_EDIT,
+                    Permission.CLINIC_BILL_VIEW, Permission.CLINIC_BILL_CREATE, Permission.CLINIC_BILL_MANAGE);
             case ACCOUNTANT  -> List.of(
                     Permission.FINANCE_VIEW, Permission.FINANCE_CREATE, Permission.FINANCE_MANAGE,
                     Permission.REPORTS_VIEW);
             case PATHOLOGIST -> List.of(
                     Permission.PATIENT_VIEW,
                     Permission.PATHOLOGY_VIEW, Permission.PATHOLOGY_CREATE,
-                    Permission.PATHOLOGY_EDIT, Permission.PATHOLOGY_MANAGE);
+                    Permission.PATHOLOGY_EDIT, Permission.PATHOLOGY_MANAGE,
+                    Permission.CLINIC_HOME_COLLECTION_VIEW);
             case RADIOLOGIST -> List.of(
                     Permission.PATIENT_VIEW,
                     Permission.RADIOLOGY_VIEW, Permission.RADIOLOGY_CREATE,
@@ -178,6 +187,7 @@ public class AuthService {
             case CLINIC_TECHNICIAN -> List.of(
                     Permission.PATIENT_VIEW,
                     Permission.CLINIC_HOME_COLLECTION_VIEW,
+                    Permission.CLINIC_HOME_COLLECTION_CREATE,
                     Permission.CLINIC_HOME_COLLECTION_EDIT);
         };
     }
