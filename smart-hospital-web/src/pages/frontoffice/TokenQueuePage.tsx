@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import {
   Table, Tag, Button, Space, Card, Select, Modal, Form, Input, Row, Col,
-  Badge, Statistic, Tooltip,
+  Badge, Tooltip,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { PlusOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import { PlusOutlined, ThunderboltOutlined, UnorderedListOutlined, ClockCircleOutlined, PlayCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { PageHeader, PatientSearchSelect } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useOpdTokens, useIssueToken, useUpdateTokenStatus } from '@/hooks/useFrontOffice'
 import { useAuthStore } from '@/store/authStore'
 import type { OpdToken, TokenStatus, IssueTokenPayload } from '@/types'
@@ -92,7 +93,7 @@ export function TokenQueuePage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="OPD Token Queue"
         subtitle={`Today — ${dayjs().format('DD MMM YYYY')}`}
@@ -105,14 +106,15 @@ export function TokenQueuePage() {
         }
       />
 
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}><Card><Statistic title="Total Today"  value={tokens.length} /></Card></Col>
-        <Col span={6}><Card><Statistic title="Waiting"      value={waiting}     valueStyle={{ color: '#8c8c8c' }} /></Card></Col>
-        <Col span={6}><Card><Statistic title="In Progress"  value={inProgress}  valueStyle={{ color: '#1677ff' }} /></Card></Col>
-        <Col span={6}><Card><Statistic title="Completed"    value={completed}   valueStyle={{ color: '#52c41a' }} /></Card></Col>
-      </Row>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Total Today" value={tokens.length.toString()} icon={<UnorderedListOutlined />} color="primary" loading={isLoading} />
+        <KpiCard title="Waiting" value={waiting.toString()} icon={<ClockCircleOutlined />} color="warning" loading={isLoading} />
+        <KpiCard title="In Progress" value={inProgress.toString()} icon={<PlayCircleOutlined />} color="primary" loading={isLoading} />
+        <KpiCard title="Completed" value={completed.toString()} icon={<CheckCircleOutlined />} color="success" loading={isLoading} />
+      </div>
 
       <Card
+        className="medical-card"
         title={
           <Space>
             <span>Queue</span>
@@ -170,6 +172,6 @@ export function TokenQueuePage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

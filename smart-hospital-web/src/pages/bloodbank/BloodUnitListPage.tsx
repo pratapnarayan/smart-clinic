@@ -111,7 +111,7 @@ export function BloodUnitListPage() {
   const actionColor = confirmUnit?.action === 'AVAILABLE' ? 'primary' : 'danger' as const;
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Blood Units"
         subtitle="Blood bag inventory — testing and status management"
@@ -124,7 +124,7 @@ export function BloodUnitListPage() {
         }
       />
 
-      <Card
+      <Card className="medical-card"
         title={
           <Space wrap>
             <Select allowClear placeholder="Blood group" style={{ width: 120 }}
@@ -205,6 +205,6 @@ export function BloodUnitListPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

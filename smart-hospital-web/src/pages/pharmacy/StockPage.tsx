@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Table, Input, Tag, Button, Alert, Tabs, Badge, Modal, Form,
-  InputNumber, DatePicker, Space, type TableProps,
+  InputNumber, DatePicker, Space, Card, type TableProps,
 } from 'antd'
 import { PlusOutlined, SearchOutlined, WarningOutlined, MedicineBoxOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -210,7 +210,7 @@ export function StockPage() {
   ]
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Pharmacy Stock"
         subtitle="Medicine catalogue and batch management"
@@ -219,13 +219,13 @@ export function StockPage() {
 
       {lowStock && lowStock.length > 0 && (
         <Alert
-          type="error" showIcon className="mb-4"
+          type="error" showIcon
           message={`${lowStock.length} medicine(s) need restocking`}
         />
       )}
       {expiring && expiring.length > 0 && (
         <Alert
-          type="warning" showIcon className="mb-4"
+          type="warning" showIcon
           message={`${expiring.length} batch(es) expiring within 30 days`}
         />
       )}
@@ -244,18 +244,20 @@ export function StockPage() {
                 onSearch={setQuery}
                 onChange={(e) => !e.target.value && setQuery('')}
               />
-              <Table
-                rowKey="id"
-                dataSource={medicines?.content}
-                columns={medicineColumns}
-                loading={isLoading}
-                pagination={{
-                  current: (medicines?.page ?? 0) + 1,
-                  pageSize: medicines?.size ?? 20,
-                  total: medicines?.total ?? 0,
-                  onChange: (p) => setPage(p - 1),
-                }}
-              />
+              <Card className="medical-card" styles={{ body: { padding: 0 } }}>
+                <Table
+                  rowKey="id"
+                  dataSource={medicines?.content}
+                  columns={medicineColumns}
+                  loading={isLoading}
+                  pagination={{
+                    current: (medicines?.page ?? 0) + 1,
+                    pageSize: medicines?.size ?? 20,
+                    total: medicines?.total ?? 0,
+                    onChange: (p) => setPage(p - 1),
+                  }}
+                />
+              </Card>
             </>
           ),
         },
@@ -267,13 +269,15 @@ export function StockPage() {
             </Badge>
           ),
           children: (
-            <Table
-              rowKey="id"
-              size="small"
-              dataSource={expiring}
-              columns={batchColumns}
-              pagination={false}
-            />
+            <Card className="medical-card" styles={{ body: { padding: 0 } }}>
+              <Table
+                rowKey="id"
+                size="small"
+                dataSource={expiring}
+                columns={batchColumns}
+                pagination={false}
+              />
+            </Card>
           ),
         },
         {
@@ -284,13 +288,15 @@ export function StockPage() {
             </Badge>
           ),
           children: (
-            <Table
-              rowKey="id"
-              size="small"
-              dataSource={lowStock}
-              columns={lowStockColumns}
-              pagination={false}
-            />
+            <Card className="medical-card" styles={{ body: { padding: 0 } }}>
+              <Table
+                rowKey="id"
+                size="small"
+                dataSource={lowStock}
+                columns={lowStockColumns}
+                pagination={false}
+              />
+            </Card>
           ),
         },
       ]} />

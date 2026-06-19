@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Card, Row, Col, Statistic, Tag, Table, Button } from 'antd'
+import { Card, Tag, Table, Button } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   ClockCircleOutlined, CalendarOutlined,
@@ -7,6 +7,7 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useRadiologyDashboard, useRadiologyOrders } from '@/hooks/useRadiology'
 import type { RadiologyOrder, RadiologyOrderStatus } from '@/types'
 
@@ -62,7 +63,7 @@ export function RadiologyDashboardPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Radiology"
         subtitle="Imaging orders overview and active worklist"
@@ -74,55 +75,45 @@ export function RadiologyDashboardPage() {
         }
       />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} md={5}>
-          <Card loading={dashLoading}>
-            <Statistic
-              title="Pending"
-              value={dash?.pendingOrders ?? 0}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#8c8c8c' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={5}>
-          <Card loading={dashLoading}>
-            <Statistic
-              title="Scheduled"
-              value={dash?.scheduledOrders ?? 0}
-              prefix={<CalendarOutlined />}
-              valueStyle={{ color: '#1677ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={5}>
-          <Card loading={dashLoading}>
-            <Statistic
-              title="In Progress"
-              value={dash?.inProgressOrders ?? 0}
-              prefix={<PlayCircleOutlined />}
-              valueStyle={{ color: '#fa8c16' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={5}>
-          <Card loading={dashLoading}>
-            <Statistic
-              title="Completed"
-              value={dash?.completedOrders ?? 0}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={4}>
-          <Card loading={dashLoading}>
-            <Statistic title="Studies in Catalog" value={dash?.totalStudies ?? 0} />
-          </Card>
-        </Col>
-      </Row>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <KpiCard
+          title="Pending"
+          value={dash?.pendingOrders ?? 0}
+          icon={<ClockCircleOutlined />}
+          color="warning"
+          loading={dashLoading}
+        />
+        <KpiCard
+          title="Scheduled"
+          value={dash?.scheduledOrders ?? 0}
+          icon={<CalendarOutlined />}
+          color="primary"
+          loading={dashLoading}
+        />
+        <KpiCard
+          title="In Progress"
+          value={dash?.inProgressOrders ?? 0}
+          icon={<PlayCircleOutlined />}
+          color="cyan"
+          loading={dashLoading}
+        />
+        <KpiCard
+          title="Completed"
+          value={dash?.completedOrders ?? 0}
+          icon={<CheckCircleOutlined />}
+          color="success"
+          loading={dashLoading}
+        />
+        <KpiCard
+          title="Studies in Catalog"
+          value={dash?.totalStudies ?? 0}
+          icon={<FileSearchOutlined />}
+          color="purple"
+          loading={dashLoading}
+        />
+      </div>
 
-      <Card title="Active Worklist — Pending &amp; In Progress">
+      <Card title="Active Worklist — Pending &amp; In Progress" className="medical-card">
         <Table
           rowKey="id"
           size="small"
@@ -133,6 +124,6 @@ export function RadiologyDashboardPage() {
           onRow={r => ({ onClick: () => navigate(`/radiology/orders/${r.id}`) })}
         />
       </Card>
-    </>
+    </div>
   )
 }

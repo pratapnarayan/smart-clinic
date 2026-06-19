@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Tag, Button, Space, Select, Card, Statistic, Row, Col } from 'antd'
+import { Table, Tag, Button, Space, Select, Card } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined, MedicineBoxOutlined, HomeOutlined, CheckCircleOutlined, ColumnWidthOutlined } from '@ant-design/icons'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useIpdAdmissions, useIpdDashboard } from '@/hooks/useIpd'
 import { useAuthStore } from '@/store/authStore'
 import type { IpdAdmission, AdmissionStatus } from '@/types'
@@ -61,7 +62,7 @@ export function IpdListPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="IPD — Inpatient Department"
         subtitle="Manage admissions, beds and discharges"
@@ -75,23 +76,16 @@ export function IpdListPage() {
       />
 
       {dashboard && (
-        <Row gutter={16} style={{ marginBottom: 24 }}>
-          <Col span={6}>
-            <Card><Statistic title="Currently Admitted" value={dashboard.totalAdmitted} valueStyle={{ color: '#1677ff' }} /></Card>
-          </Col>
-          <Col span={6}>
-            <Card><Statistic title="Total Beds" value={dashboard.totalBeds} /></Card>
-          </Col>
-          <Col span={6}>
-            <Card><Statistic title="Available Beds" value={dashboard.availableBeds} valueStyle={{ color: '#52c41a' }} /></Card>
-          </Col>
-          <Col span={6}>
-            <Card><Statistic title="Occupied Beds" value={dashboard.occupiedBeds} valueStyle={{ color: '#faad14' }} /></Card>
-          </Col>
-        </Row>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard title="Currently Admitted" value={dashboard.totalAdmitted.toString()} icon={<MedicineBoxOutlined />} color="primary" />
+          <KpiCard title="Total Beds" value={dashboard.totalBeds.toString()} icon={<HomeOutlined />} color="cyan" />
+          <KpiCard title="Available Beds" value={dashboard.availableBeds.toString()} icon={<CheckCircleOutlined />} color="success" />
+          <KpiCard title="Occupied Beds" value={dashboard.occupiedBeds.toString()} icon={<ColumnWidthOutlined />} color="warning" />
+        </div>
       )}
 
       <Card
+        className="medical-card"
         title={
           <Space>
             <span>Admissions</span>
@@ -125,6 +119,6 @@ export function IpdListPage() {
       </Card>
 
       <IpdAdmissionFormModal open={admitOpen} onClose={() => setAdmitOpen(false)} />
-    </>
+    </div>
   )
 }

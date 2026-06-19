@@ -57,7 +57,7 @@ export function DoctorProfilePage() {
   )?.slots ?? []
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
         subtitle={doctor.qualifications ?? ''}
@@ -78,7 +78,7 @@ export function DoctorProfilePage() {
       />
 
       {/* Hero Section */}
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="medical-card">
         <Row gutter={24} align="middle">
           <Col>
             <PhotoUpload
@@ -138,12 +138,12 @@ export function DoctorProfilePage() {
               <Row gutter={16}>
                 <Col xs={24} lg={16}>
                   {doctor.biography && (
-                    <Card title="About" style={{ marginBottom: 16 }}>
+                    <Card title="About" className="medical-card">
                       <Paragraph>{doctor.biography}</Paragraph>
                     </Card>
                   )}
                   {doctor.specializations.length > 0 && (
-                    <Card title="Areas of Expertise" style={{ marginBottom: 16 }}>
+                    <Card title="Areas of Expertise" className="medical-card">
                       <Space wrap>
                         {doctor.specializations.map(s => (
                           <Tag key={s.id} color="blue" style={{ padding: '4px 12px', fontSize: 13 }}>
@@ -154,23 +154,23 @@ export function DoctorProfilePage() {
                     </Card>
                   )}
                   {doctor.awards && (
-                    <Card title="Awards & Recognition" style={{ marginBottom: 16 }}>
+                    <Card title="Awards & Recognition" className="medical-card">
                       <Paragraph>{doctor.awards}</Paragraph>
                     </Card>
                   )}
                   {doctor.achievements && (
-                    <Card title="Achievements" style={{ marginBottom: 16 }}>
+                    <Card title="Achievements" className="medical-card">
                       <Paragraph>{doctor.achievements}</Paragraph>
                     </Card>
                   )}
                   {doctor.publications && (
-                    <Card title="Publications" style={{ marginBottom: 16 }}>
+                    <Card title="Publications" className="medical-card">
                       <Paragraph>{doctor.publications}</Paragraph>
                     </Card>
                   )}
                 </Col>
                 <Col xs={24} lg={8}>
-                  <Card title="Professional Details" style={{ marginBottom: 16 }}>
+                  <Card title="Professional Details" className="medical-card">
                     <Descriptions column={1} size="small">
                       <Descriptions.Item label="Employee Code">{doctor.employeeCode}</Descriptions.Item>
                       <Descriptions.Item label="Department">{deptName}</Descriptions.Item>
@@ -193,7 +193,7 @@ export function DoctorProfilePage() {
             key: 'schedule',
             label: 'Weekly Schedule',
             children: (
-              <Card>
+              <Card className="medical-card">
                 {!schedules.length ? (
                   <Alert type="info" message="No schedule configured for this doctor." />
                 ) : (
@@ -231,7 +231,7 @@ export function DoctorProfilePage() {
             children: (
               <Row gutter={16}>
                 <Col xs={24} lg={16}>
-                  <Card title="Availability Calendar">
+                  <Card title="Availability Calendar" className="medical-card">
                     <Calendar
                       fullscreen={false}
                       onSelect={(date: Dayjs) => setCalDate(date)}
@@ -245,7 +245,7 @@ export function DoctorProfilePage() {
                   </Card>
                 </Col>
                 <Col xs={24} lg={8}>
-                  <Card title={`Slots — ${calDate.format('DD MMM YYYY')}`}>
+                  <Card title={`Slots — ${calDate.format('DD MMM YYYY')}`} className="medical-card">
                     {selectedDateSlots.length === 0 ? (
                       <Alert type="info" message="No slots available on this date." />
                     ) : (

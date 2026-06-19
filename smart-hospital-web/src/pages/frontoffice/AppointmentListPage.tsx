@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Table, Tag, Button, Space, Card, DatePicker, Statistic, Row, Col, Popconfirm, Tabs, Badge } from 'antd'
+import { Table, Tag, Button, Space, Card, DatePicker, Popconfirm, Tabs, Badge } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined, CalendarOutlined, CheckCircleOutlined, UserOutlined, RiseOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import {
   useAppointments, useUpcomingAppointments, useFrontOfficeDashboard,
   useUpdateAppointment, useCancelAppointment,
@@ -83,7 +84,7 @@ export function AppointmentListPage() {
   const byDateCols   = buildColumns(false, canEdit)
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Front Office — Appointments"
         subtitle="Schedule and manage patient appointments"
@@ -97,12 +98,12 @@ export function AppointmentListPage() {
       />
 
       {dashboard && (
-        <Row gutter={16} style={{ marginBottom: 24 }}>
-          <Col span={6}><Card><Statistic title="Today's Appointments" value={dashboard.todayAppointments} /></Card></Col>
-          <Col span={6}><Card><Statistic title="Confirmed"  value={dashboard.confirmedAppointments}  valueStyle={{ color: '#1677ff' }} /></Card></Col>
-          <Col span={6}><Card><Statistic title="Checked In" value={dashboard.checkedInAppointments}  valueStyle={{ color: '#faad14' }} /></Card></Col>
-          <Col span={6}><Card><Statistic title="Upcoming (all)" value={upcoming?.total ?? 0}        valueStyle={{ color: '#52c41a' }} /></Card></Col>
-        </Row>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard title="Today's Appointments" value={dashboard.todayAppointments.toString()} icon={<CalendarOutlined />} color="primary" />
+          <KpiCard title="Confirmed" value={dashboard.confirmedAppointments.toString()} icon={<CheckCircleOutlined />} color="success" />
+          <KpiCard title="Checked In" value={dashboard.checkedInAppointments.toString()} icon={<UserOutlined />} color="warning" />
+          <KpiCard title="Upcoming (all)" value={(upcoming?.total ?? 0).toString()} icon={<RiseOutlined />} color="cyan" />
+        </div>
       )}
 
       <Tabs
@@ -116,7 +117,7 @@ export function AppointmentListPage() {
               </Badge>
             ),
             children: (
-              <Card>
+              <Card className="medical-card">
                 <Table
                   rowKey="id"
                   size="small"
@@ -133,6 +134,7 @@ export function AppointmentListPage() {
             label: 'By Date',
             children: (
               <Card
+                className="medical-card"
                 title={
                   <Space>
                     <span>Appointments for</span>
@@ -159,6 +161,6 @@ export function AppointmentListPage() {
       />
 
       <AppointmentFormModal open={bookOpen} onClose={() => setBookOpen(false)} />
-    </>
+    </div>
   )
 }

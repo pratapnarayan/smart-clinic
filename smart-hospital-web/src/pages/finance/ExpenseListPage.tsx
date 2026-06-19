@@ -64,7 +64,7 @@ export function ExpenseListPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Expense Entries"
         subtitle="All operational expenditures"
@@ -78,6 +78,7 @@ export function ExpenseListPage() {
       />
 
       <Card
+        className="medical-card"
         title={
           <Space wrap>
             <DatePicker.RangePicker
@@ -164,6 +165,6 @@ export function ExpenseListPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

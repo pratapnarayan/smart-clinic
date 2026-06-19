@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom'
-import { Card, Row, Col, Statistic, Table, Tag, Button, Progress } from 'antd'
+import { Card, Table, Tag, Button, Progress } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { CalendarOutlined, PlayCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { CalendarOutlined, PlayCircleOutlined, CheckCircleOutlined, BarChartOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useOtDashboard } from '@/hooks/useOperation'
 import type { OtSchedule, OtStatus, OtTheatreUtilization } from '@/types'
 
@@ -60,68 +61,71 @@ export function OtDashboardPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader title="Operation Theatre" subtitle="Today's OT schedule and utilization" />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} md={5}>
-          <Card loading={isLoading}>
-            <Statistic title="Today — Scheduled" value={dash?.todayScheduled ?? 0}
-              prefix={<CalendarOutlined />} valueStyle={{ color: '#1677ff' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={5}>
-          <Card loading={isLoading}>
-            <Statistic title="Today — In Progress" value={dash?.todayInProgress ?? 0}
-              prefix={<PlayCircleOutlined />} valueStyle={{ color: '#fa8c16' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={5}>
-          <Card loading={isLoading}>
-            <Statistic title="Today — Completed" value={dash?.todayCompleted ?? 0}
-              prefix={<CheckCircleOutlined />} valueStyle={{ color: '#52c41a' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={5}>
-          <Card loading={isLoading}>
-            <Statistic title="Last 30 Days — Total" value={dash?.monthTotal ?? 0} />
-          </Card>
-        </Col>
-        <Col xs={24} md={4}>
-          <Card loading={isLoading} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>Today's Progress</div>
-            <Progress type="circle" percent={completedPct} size={64} />
-          </Card>
-        </Col>
-      </Row>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <KpiCard
+          title="Today — Scheduled"
+          value={(dash?.todayScheduled ?? 0).toString()}
+          icon={<CalendarOutlined />}
+          color="primary"
+          loading={isLoading}
+        />
+        <KpiCard
+          title="Today — In Progress"
+          value={(dash?.todayInProgress ?? 0).toString()}
+          icon={<PlayCircleOutlined />}
+          color="warning"
+          loading={isLoading}
+        />
+        <KpiCard
+          title="Today — Completed"
+          value={(dash?.todayCompleted ?? 0).toString()}
+          icon={<CheckCircleOutlined />}
+          color="success"
+          loading={isLoading}
+        />
+        <KpiCard
+          title="Last 30 Days — Total"
+          value={(dash?.monthTotal ?? 0).toString()}
+          icon={<BarChartOutlined />}
+          color="cyan"
+          loading={isLoading}
+        />
+        <Card className="medical-card" loading={isLoading} styles={{ body: { textAlign: 'center', padding: '16px' } }}>
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>Today's Progress</div>
+          <Progress type="circle" percent={completedPct} size={64} />
+        </Card>
+      </div>
 
-      <Row gutter={16}>
-        <Col xs={24} xl={17}>
-          <Card title={`Today's Schedule (${dayjs().format('DD MMM YYYY')})`} loading={isLoading}>
-            <Table
-              rowKey="id"
-              size="small"
-              columns={scheduleColumns}
-              dataSource={dash?.todaySchedules ?? []}
-              pagination={false}
-              locale={{ emptyText: 'No operations scheduled today' }}
-              onRow={r => ({ onClick: () => navigate(`/operation/schedules/${r.id}`) })}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} xl={7}>
-          <Card title="Theatre Utilization — Last 30 Days" loading={isLoading}>
-            <Table
-              rowKey="theatreName"
-              size="small"
-              columns={utilisationColumns}
-              dataSource={dash?.theatreUtilization ?? []}
-              pagination={false}
-              locale={{ emptyText: 'No data yet' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-    </>
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+        <Card
+          className="medical-card xl:col-span-4"
+          title={`Today's Schedule (${dayjs().format('DD MMM YYYY')})`}
+          loading={isLoading}
+        >
+          <Table
+            rowKey="id"
+            size="small"
+            columns={scheduleColumns}
+            dataSource={dash?.todaySchedules ?? []}
+            pagination={false}
+            locale={{ emptyText: 'No operations scheduled today' }}
+            onRow={r => ({ onClick: () => navigate(`/operation/schedules/${r.id}`) })}
+          />
+        </Card>
+        <Card className="medical-card" title="Theatre Utilization — Last 30 Days" loading={isLoading}>
+          <Table
+            rowKey="theatreName"
+            size="small"
+            columns={utilisationColumns}
+            dataSource={dash?.theatreUtilization ?? []}
+            pagination={false}
+            locale={{ emptyText: 'No data yet' }}
+          />
+        </Card>
+      </div>
+    </div>
   )
 }

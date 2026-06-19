@@ -107,7 +107,7 @@ export function DoctorSchedulePage() {
   ]
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={`Schedule — Dr. ${doctor.firstName} ${doctor.lastName}`}
         subtitle="Configure weekly OPD schedule"
@@ -125,7 +125,7 @@ export function DoctorSchedulePage() {
           </Space>
         }
       />
-      <Card>
+      <Card className="medical-card">
         <Table
           rowKey="key"
           dataSource={rows}

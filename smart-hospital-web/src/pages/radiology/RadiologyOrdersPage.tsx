@@ -75,7 +75,7 @@ export function RadiologyOrdersPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Radiology — Orders"
         subtitle="All imaging orders and reports"
@@ -87,7 +87,7 @@ export function RadiologyOrdersPage() {
         }
       />
 
-      <Card
+      <Card className="medical-card"
         title={
           <Space>
             <FileSearchOutlined />
@@ -122,6 +122,6 @@ export function RadiologyOrdersPage() {
           onRow={r => ({ onClick: () => navigate(`/radiology/orders/${r.id}`) })}
         />
       </Card>
-    </>
+    </div>
   )
 }

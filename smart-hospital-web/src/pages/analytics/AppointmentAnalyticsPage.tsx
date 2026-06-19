@@ -1,7 +1,9 @@
 import ReactApexChart from 'react-apexcharts'
-import { Row, Col, Card } from 'antd'
+import { Card } from 'antd'
+import { CalendarOutlined, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { PageHeader } from '@/components/common'
-import { KpiCard, EmptyChart, AnalyticsFilter, ExportToolbar, baseChartOptions, chartPalette } from '@/components/analytics'
+import { KpiCard, EmptyChart, AnalyticsFilter, ExportToolbar } from '@/components/analytics'
+import { chartConfigs } from '@/theme/chartTheme'
 import { useAppointmentAnalytics } from '@/hooks/useAnalytics'
 import { withDemoFallback, DEMO_APPOINTMENTS } from '@/hooks/useDemoData'
 import type { AppointmentAnalytics } from '@/types'
@@ -11,63 +13,57 @@ export function AppointmentAnalyticsPage() {
   const { data, isDemo } = withDemoFallback<AppointmentAnalytics>(raw, DEMO_APPOINTMENTS, isLoading)
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <PageHeader title="Appointment Analytics" subtitle="Booking patterns, status distribution and peak hours" />
         <ExportToolbar section="appointments" isDemoData={isDemo} />
       </div>
       <AnalyticsFilter />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {[
-          { title: 'Total Appointments', value: data.totalAppointments?.toLocaleString() ?? '0' },
-          { title: 'Completed', value: data.completed?.toLocaleString() ?? '0' },
-          { title: 'Cancelled', value: data.cancelled?.toLocaleString() ?? '0' },
-          { title: 'No Show', value: data.noShow?.toLocaleString() ?? '0' },
-        ].map(k => <Col xs={24} sm={12} md={6} key={k.title}><KpiCard {...k} loading={isLoading} /></Col>)}
-      </Row>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard title="Total Appointments" value={data.totalAppointments?.toLocaleString() ?? '0'} loading={isLoading} icon={<CalendarOutlined />} color="primary" />
+        <KpiCard title="Completed" value={data.completed?.toLocaleString() ?? '0'} loading={isLoading} icon={<CheckCircleOutlined />} color="success" />
+        <KpiCard title="Cancelled" value={data.cancelled?.toLocaleString() ?? '0'} loading={isLoading} icon={<CloseCircleOutlined />} color="danger" />
+        <KpiCard title="No Show" value={data.noShow?.toLocaleString() ?? '0'} loading={isLoading} icon={<ExclamationCircleOutlined />} color="warning" />
+      </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} lg={16}>
-          <Card title="Daily Appointment Trend">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card title="Daily Appointment Trend" className="medical-card" styles={{ body: { padding: '24px' } }}>
             {data.dailyTrend?.length ? (
-              <ReactApexChart type="line" height={260}
+              <ReactApexChart type="area" height={260}
                 series={[{ name: 'Appointments', data: data.dailyTrend.map(p => p.value) }]}
-                options={{ ...baseChartOptions, xaxis: { categories: data.dailyTrend.map(p => p.label), labels: { rotate: -45, style: { fontSize: '10px' } } }, colors: ['#1677ff'], stroke: { curve: 'smooth', width: 2 } }} />
+                options={{ ...chartConfigs.area('#1677ff'), xaxis: { categories: data.dailyTrend.map(p => p.label), labels: { rotate: -45, style: { fontSize: '10px' } } } }} />
             ) : <EmptyChart height={260} />}
           </Card>
-        </Col>
-        <Col xs={24} lg={8}>
-          <Card title="Status Distribution">
+        </div>
+        <div>
+          <Card title="Status Distribution" className="medical-card" styles={{ body: { padding: '24px' } }}>
             {data.statusDistribution?.length ? (
               <ReactApexChart type="donut" height={260}
                 series={data.statusDistribution.map(p => p.value)}
-                options={{ ...baseChartOptions, labels: data.statusDistribution.map(p => p.name), colors: ['#52c41a', '#ff4d4f', '#faad14', '#1677ff'], legend: { position: 'bottom' } }} />
+                options={{ ...chartConfigs.donut(), labels: data.statusDistribution.map(p => p.name) }} />
             ) : <EmptyChart height={260} />}
           </Card>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          <Card title="Appointments by Doctor (Top 10)">
-            {data.byDoctor?.length ? (
-              <ReactApexChart type="bar" height={240}
-                series={[{ name: 'Appointments', data: data.byDoctor.map(p => p.value) }]}
-                options={{ ...baseChartOptions, plotOptions: { bar: { horizontal: true, borderRadius: 4 } }, xaxis: { categories: data.byDoctor.map(p => p.name) }, colors: ['#722ed1'] }} />
-            ) : <EmptyChart height={240} />}
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card title="Appointments by Department">
-            {data.byDepartment?.length ? (
-              <ReactApexChart type="bar" height={240}
-                series={[{ name: 'Appointments', data: data.byDepartment.map(p => p.value) }]}
-                options={{ ...baseChartOptions, xaxis: { categories: data.byDepartment.map(p => p.name) }, colors: ['#13c2c2'], plotOptions: { bar: { borderRadius: 4 } } }} />
-            ) : <EmptyChart height={240} />}
-          </Card>
-        </Col>
-      </Row>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card title="Appointments by Doctor (Top 10)" className="medical-card" styles={{ body: { padding: '24px' } }}>
+          {data.byDoctor?.length ? (
+            <ReactApexChart type="bar" height={240}
+              series={[{ name: 'Appointments', data: data.byDoctor.map(p => p.value) }]}
+              options={{ ...chartConfigs.horizontalBar('#722ed1'), xaxis: { categories: data.byDoctor.map(p => p.name) } }} />
+          ) : <EmptyChart height={240} />}
+        </Card>
+        <Card title="Appointments by Department" className="medical-card" styles={{ body: { padding: '24px' } }}>
+          {data.byDepartment?.length ? (
+            <ReactApexChart type="bar" height={240}
+              series={[{ name: 'Appointments', data: data.byDepartment.map(p => p.value) }]}
+              options={{ ...chartConfigs.bar('#13c2c2'), xaxis: { categories: data.byDepartment.map(p => p.name) } }} />
+          ) : <EmptyChart height={240} />}
+        </Card>
+      </div>
     </div>
   )
 }

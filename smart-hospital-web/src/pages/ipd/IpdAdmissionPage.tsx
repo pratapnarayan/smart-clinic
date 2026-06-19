@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Card, Descriptions, Tag, Button, Table, Form, Input,
-  Select, InputNumber, DatePicker, Modal, Space, Divider, Row, Col, Statistic,
+  Select, InputNumber, DatePicker, Modal, Space, Divider, Row, Col,
 } from 'antd'
-import { ArrowLeftOutlined, PlusOutlined, LogoutOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, PlusOutlined, LogoutOutlined, DollarCircleOutlined, TagOutlined, WalletOutlined, CalendarOutlined } from '@ant-design/icons'
+import { KpiCard } from '@/components/analytics'
 import dayjs from 'dayjs'
 import { PageHeader } from '@/components/common'
 import { useIpdAdmission, useDischargePatient, useAddIpdCharge } from '@/hooks/useIpd'
@@ -45,7 +46,7 @@ export function IpdAdmissionPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={`Admission — ${admission.admissionNumber}`}
         subtitle={admission.patientName}
@@ -64,18 +65,22 @@ export function IpdAdmissionPage() {
         }
       />
 
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}><Card><Statistic title="Total Charges" value={`₹${admission.totalCharges.toLocaleString('en-IN')}`} /></Card></Col>
-        <Col span={6}><Card><Statistic title="Discount"      value={`₹${admission.discount.toLocaleString('en-IN')}`} /></Card></Col>
-        <Col span={6}><Card><Statistic title="Net Amount"    value={`₹${admission.netAmount.toLocaleString('en-IN')}`} valueStyle={{ color: '#1677ff' }} /></Card></Col>
-        <Col span={6}><Card><Statistic title="Days Admitted"
-          value={Math.max(1, Math.ceil((
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Total Charges" value={`₹${admission.totalCharges.toLocaleString('en-IN')}`} icon={<DollarCircleOutlined />} color="primary" />
+        <KpiCard title="Discount" value={`₹${admission.discount.toLocaleString('en-IN')}`} icon={<TagOutlined />} color="warning" />
+        <KpiCard title="Net Amount" value={`₹${admission.netAmount.toLocaleString('en-IN')}`} icon={<WalletOutlined />} color="success" />
+        <KpiCard
+          title="Days Admitted"
+          value={String(Math.max(1, Math.ceil((
             (admission.dischargeDate ? new Date(admission.dischargeDate) : new Date()).getTime()
             - new Date(admission.admissionDate).getTime()
-          ) / 86400000))} /></Card></Col>
-      </Row>
+          ) / 86400000)))}
+          icon={<CalendarOutlined />}
+          color="cyan"
+        />
+      </div>
 
-      <Card title="Admission Details" style={{ marginBottom: 16 }}>
+      <Card title="Admission Details" className="medical-card">
         <Descriptions bordered column={2} size="small">
           <Descriptions.Item label="Status">
             <Tag color={STATUS_COLOR[admission.status]}>{admission.status}</Tag>
@@ -106,7 +111,7 @@ export function IpdAdmissionPage() {
         </Descriptions>
       </Card>
 
-      <Card title={`Charges (${admission.charges.length})`}>
+      <Card title={`Charges (${admission.charges.length})`} className="medical-card">
         <Table
           rowKey="id"
           size="small"
@@ -188,6 +193,6 @@ export function IpdAdmissionPage() {
           </Row>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

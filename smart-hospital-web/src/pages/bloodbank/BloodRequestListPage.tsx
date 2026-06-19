@@ -127,7 +127,7 @@ export function BloodRequestListPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Blood Requests"
         subtitle="Patient blood requests and issue management"
@@ -140,7 +140,7 @@ export function BloodRequestListPage() {
         }
       />
 
-      <Card
+      <Card className="medical-card"
         title={
           <Select allowClear placeholder="All statuses" style={{ width: 200 }}
             onChange={v => { setStatus(v); setPage(0) }}
@@ -302,6 +302,6 @@ export function BloodRequestListPage() {
           </>
         )}
       </Modal>
-    </>
+    </div>
   )
 }

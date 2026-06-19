@@ -1,4 +1,4 @@
-import { Row, Col, Card, Statistic, Alert, Spin, Table, Tag } from 'antd'
+import { Card, Alert, Table, Tag } from 'antd'
 import {
   UserOutlined, MedicineBoxOutlined, ShopOutlined, WarningOutlined,
 } from '@ant-design/icons'
@@ -7,6 +7,7 @@ import { useLowStockMedicines, useExpiringBatches } from '@/hooks/usePharmacy'
 import { useVisitsByDate } from '@/hooks/useOpdVisits'
 import { usePatients } from '@/hooks/usePatients'
 import { PageHeader } from '@/components/common/PageHeader'
+import { KpiCard } from '@/components/analytics'
 import { formatDate, formatCurrency } from '@/utils'
 import type { OpdVisit, VisitStatus } from '@/types'
 import type { ColumnsType } from 'antd/es/table'
@@ -41,70 +42,46 @@ export function DashboardPage() {
   const { data: expiring,     isLoading: loadingExpiry }  = useExpiringBatches(30)
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
-        title={`Good ${getGreeting()}, ${user?.firstName ?? ''}!`}
-        subtitle={`Today is ${dayjs().format('DD MMM YYYY')} · ${user?.tenantId}`}
+        title={`Good ${getGreeting()}${user?.firstName ? `, ${user.firstName}` : ''}!`}
+        subtitle={`Today is ${dayjs().format('DD MMM YYYY')}${user?.tenantId ? ` · ${user.tenantId}` : ''}`}
       />
 
       {/* ── KPI cards ────────────────────────────────────────────────────── */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            {loadingVisits
-              ? <Spin />
-              : <Statistic
-                  title="Today's OPD Visits"
-                  value={todayVisits?.total ?? 0}
-                  prefix={<MedicineBoxOutlined style={{ color: '#1677ff' }} />}
-                  valueStyle={{ color: '#1677ff' }}
-                />
-            }
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            {loadingPatients
-              ? <Spin />
-              : <Statistic
-                  title="Registered Patients"
-                  value={patientsPage?.total ?? 0}
-                  prefix={<UserOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-            }
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            {loadingLow
-              ? <Spin />
-              : <Statistic
-                  title="Low Stock Medicines"
-                  value={lowStock?.length ?? 0}
-                  prefix={<ShopOutlined style={{ color: lowStock?.length ? '#ff4d4f' : '#52c41a' }} />}
-                  valueStyle={{ color: lowStock?.length ? '#ff4d4f' : '#52c41a' }}
-                />
-            }
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            {loadingExpiry
-              ? <Spin />
-              : <Statistic
-                  title="Batches Expiring (30d)"
-                  value={expiring?.length ?? 0}
-                  prefix={<WarningOutlined style={{ color: expiring?.length ? '#faad14' : '#52c41a' }} />}
-                  valueStyle={{ color: expiring?.length ? '#faad14' : '#52c41a' }}
-                />
-            }
-          </Card>
-        </Col>
-      </Row>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          title="Today's OPD Visits"
+          value={(todayVisits?.total ?? 0).toString()}
+          icon={<MedicineBoxOutlined />}
+          color="primary"
+          loading={loadingVisits}
+        />
+        <KpiCard
+          title="Registered Patients"
+          value={(patientsPage?.total ?? 0).toString()}
+          icon={<UserOutlined />}
+          color="success"
+          loading={loadingPatients}
+        />
+        <KpiCard
+          title="Low Stock Medicines"
+          value={(lowStock?.length ?? 0).toString()}
+          icon={<ShopOutlined />}
+          color={lowStock?.length ? 'danger' : 'success'}
+          loading={loadingLow}
+        />
+        <KpiCard
+          title="Batches Expiring (30d)"
+          value={(expiring?.length ?? 0).toString()}
+          icon={<WarningOutlined />}
+          color={expiring?.length ? 'warning' : 'success'}
+          loading={loadingExpiry}
+        />
+      </div>
 
       {/* ── Alerts ───────────────────────────────────────────────────────── */}
-      <div className="mt-4 space-y-2">
+      <div className="space-y-2">
         {lowStock && lowStock.length > 0 && (
           <Alert
             type="error"
@@ -129,24 +106,23 @@ export function DashboardPage() {
       </div>
 
       {/* ── Today's OPD Visits table ──────────────────────────────────────── */}
-      <Row gutter={[16, 16]} className="mt-4">
-        <Col span={24}>
-          <Card
-            title={`Today's OPD Visits — ${formatDate(today)}`}
-            extra={<a href="/opd">View all</a>}
-          >
-            <Table
-              rowKey="id"
-              size="small"
-              loading={loadingVisits}
-              dataSource={todayVisits?.content ?? []}
-              columns={recentColumns}
-              pagination={false}
-              locale={{ emptyText: 'No OPD visits registered today' }}
-            />
-          </Card>
-        </Col>
-      </Row>
+      <Card
+        className="medical-card"
+        title={`Today's OPD Visits — ${formatDate(today)}`}
+        extra={<a href="/opd">View all</a>}
+        styles={{ body: { padding: 0 } }}
+      >
+        <Table
+          rowKey="id"
+          size="small"
+          loading={loadingVisits}
+          dataSource={todayVisits?.content ?? []}
+          columns={recentColumns}
+          pagination={false}
+          locale={{ emptyText: 'No OPD visits registered today' }}
+          className="[&_.ant-table-thead>tr>th]:bg-neutral-50 [&_.ant-table-thead>tr>th]:font-semibold"
+        />
+      </Card>
     </div>
   )
 }
