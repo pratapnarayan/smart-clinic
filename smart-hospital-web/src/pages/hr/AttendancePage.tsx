@@ -54,7 +54,7 @@ export function AttendancePage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Attendance"
         subtitle="Daily staff attendance tracking"
@@ -66,6 +66,7 @@ export function AttendancePage() {
       />
 
       <Card
+        className="medical-card"
         title={
           <Space>
             <span>Records for</span>
@@ -111,6 +112,6 @@ export function AttendancePage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

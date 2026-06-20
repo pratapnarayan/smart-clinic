@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Tag, Button, Input, Select, Card, Row, Col, Statistic, Space } from 'antd'
+import { Table, Tag, Button, Input, Select, Card, Space } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { PlusOutlined, SearchOutlined, TeamOutlined, CheckCircleOutlined, CheckSquareOutlined, CloseCircleOutlined, CalendarOutlined, FileTextOutlined } from '@ant-design/icons'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useEmployees, useHrDepartments, useHrDashboard } from '@/hooks/useHr'
 import { useAuthStore } from '@/store/authStore'
 import type { Employee, EmployeeStatus } from '@/types'
@@ -44,7 +45,7 @@ export function EmployeeListPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="HR — Employees"
         subtitle="Manage staff, departments and designations"
@@ -58,17 +59,18 @@ export function EmployeeListPage() {
       />
 
       {dash && (
-        <Row gutter={16} style={{ marginBottom: 24 }}>
-          <Col span={4}><Card><Statistic title="Total Staff"   value={dash.totalEmployees} /></Card></Col>
-          <Col span={4}><Card><Statistic title="Active"        value={dash.activeEmployees}    valueStyle={{ color: '#52c41a' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="Present Today" value={dash.presentToday}       valueStyle={{ color: '#1677ff' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="Absent Today"  value={dash.absentToday}        valueStyle={{ color: '#ff4d4f' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="On Leave"      value={dash.onLeaveToday}       valueStyle={{ color: '#faad14' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="Leave Pending" value={dash.pendingLeaveRequests} valueStyle={{ color: '#fa8c16' }} /></Card></Col>
-        </Row>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <KpiCard title="Total Staff"    value={(dash.totalEmployees).toString()}       icon={<TeamOutlined />}         color="primary" />
+          <KpiCard title="Active"         value={(dash.activeEmployees).toString()}      icon={<CheckCircleOutlined />}  color="success" />
+          <KpiCard title="Present Today"  value={(dash.presentToday).toString()}         icon={<CheckSquareOutlined />}  color="cyan" />
+          <KpiCard title="Absent Today"   value={(dash.absentToday).toString()}          icon={<CloseCircleOutlined />}  color="danger" />
+          <KpiCard title="On Leave"       value={(dash.onLeaveToday).toString()}         icon={<CalendarOutlined />}     color="warning" />
+          <KpiCard title="Leave Pending"  value={(dash.pendingLeaveRequests).toString()} icon={<FileTextOutlined />}     color="purple" />
+        </div>
       )}
 
       <Card
+        className="medical-card"
         title={
           <Space>
             <Input
@@ -101,6 +103,6 @@ export function EmployeeListPage() {
       </Card>
 
       <EmployeeFormModal open={addOpen} onClose={() => setAddOpen(false)} />
-    </>
+    </div>
   )
 }

@@ -34,7 +34,7 @@ export function LoginPage() {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       }}
     >
-      <Card style={{ width: 420, boxShadow: '0 8px 32px rgba(0,0,0,.2)' }}>
+      <Card className="medical-card" style={{ width: 420 }}>
         <Space direction="vertical" size="middle" style={{ width: '100%', textAlign: 'center' }}>
           <Typography.Title level={3} style={{ margin: 0 }}>
             🏥 SmartHospital

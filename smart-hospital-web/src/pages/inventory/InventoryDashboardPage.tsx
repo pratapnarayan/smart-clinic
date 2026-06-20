@@ -1,9 +1,10 @@
-import { Card, Row, Col, Statistic, Table, Tag, Alert } from 'antd'
+import { Card, Table, Tag, Alert } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   AppstoreOutlined, WarningOutlined, ArrowDownOutlined, ArrowUpOutlined,
 } from '@ant-design/icons'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useInventoryDashboard } from '@/hooks/useInventory'
 import type { InventoryItem } from '@/types'
 
@@ -33,7 +34,7 @@ export function InventoryDashboardPage() {
   const { data: dash, isLoading } = useInventoryDashboard()
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader title="Inventory Overview" subtitle="Stock status and today's activity" />
 
       {(dash?.lowStockCount ?? 0) > 0 && (
@@ -46,52 +47,14 @@ export function InventoryDashboardPage() {
         />
       )}
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} md={6}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Total Items"
-              value={dash?.totalItems ?? 0}
-              prefix={<AppstoreOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Low Stock Items"
-              value={dash?.lowStockCount ?? 0}
-              valueStyle={{ color: (dash?.lowStockCount ?? 0) > 0 ? '#ff4d4f' : '#52c41a' }}
-              prefix={<WarningOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Today — Receipts"
-              value={dash?.todayReceipts ?? 0}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<ArrowDownOutlined />}
-              suffix={<span style={{ fontSize: 12, color: '#888', marginLeft: 4 }}>
-                ({fmt(dash?.todayReceiptValue ?? 0)})
-              </span>}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Today — Issues"
-              value={dash?.todayIssues ?? 0}
-              valueStyle={{ color: '#1677ff' }}
-              prefix={<ArrowUpOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Total Items"     value={(dash?.totalItems ?? 0).toString()}     icon={<AppstoreOutlined />}   color="primary" loading={isLoading} />
+        <KpiCard title="Low Stock Items" value={(dash?.lowStockCount ?? 0).toString()}  icon={<WarningOutlined />}    color={(dash?.lowStockCount ?? 0) > 0 ? 'danger' : 'success'} loading={isLoading} />
+        <KpiCard title="Today — Receipts" value={(dash?.todayReceipts ?? 0).toString()} icon={<ArrowDownOutlined />}  color="success" loading={isLoading} subtitle={fmt(dash?.todayReceiptValue ?? 0)} />
+        <KpiCard title="Today — Issues"  value={(dash?.todayIssues ?? 0).toString()}    icon={<ArrowUpOutlined />}    color="primary" loading={isLoading} />
+      </div>
 
-      <Card title="Items at or Below Reorder Level" loading={isLoading}>
+      <Card title="Items at or Below Reorder Level" loading={isLoading} className="medical-card">
         <Table
           rowKey="id"
           size="small"
@@ -101,6 +64,6 @@ export function InventoryDashboardPage() {
           locale={{ emptyText: 'All items are adequately stocked' }}
         />
       </Card>
-    </>
+    </div>
   )
 }

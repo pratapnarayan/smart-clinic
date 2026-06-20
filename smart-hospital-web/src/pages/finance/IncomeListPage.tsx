@@ -68,7 +68,7 @@ export function IncomeListPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Income Entries"
         subtitle="All revenue received by the hospital"
@@ -81,7 +81,7 @@ export function IncomeListPage() {
         }
       />
 
-      <Card
+      <Card className="medical-card"
         title={
           <Space wrap>
             <DatePicker.RangePicker
@@ -162,6 +162,6 @@ export function IncomeListPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

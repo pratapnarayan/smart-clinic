@@ -1,7 +1,8 @@
-import { Card, Row, Col, Statistic, Table, Tag } from 'antd'
+import { Card, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
+import { ArrowUpOutlined, ArrowDownOutlined, BarChartOutlined, RiseOutlined, FallOutlined, DollarCircleOutlined } from '@ant-design/icons'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useFinanceDashboard } from '@/hooks/useFinance'
 
 const SOURCE_COLOR: Record<string, string> = {
@@ -38,96 +39,40 @@ export function FinanceDashboardPage() {
   const monthNet   = (dash?.monthNet   ?? 0)
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader title="Finance Overview" subtitle="Today and month-to-date summary" />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={4}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Today — Income"
-              value={fmt(dash?.todayIncome ?? 0)}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<ArrowUpOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Today — Expenses"
-              value={fmt(dash?.todayExpenses ?? 0)}
-              valueStyle={{ color: '#ff4d4f' }}
-              prefix={<ArrowDownOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Today — Net"
-              value={fmt(todayNet)}
-              valueStyle={{ color: todayNet >= 0 ? '#1677ff' : '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Last 30 Days — Income"
-              value={fmt(dash?.monthIncome ?? 0)}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<ArrowUpOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Last 30 Days — Expenses"
-              value={fmt(dash?.monthExpenses ?? 0)}
-              valueStyle={{ color: '#ff4d4f' }}
-              prefix={<ArrowDownOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
-          <Card loading={isLoading}>
-            <Statistic
-              title="Last 30 Days — Net"
-              value={fmt(monthNet)}
-              valueStyle={{ color: monthNet >= 0 ? '#1677ff' : '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-      </Row>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KpiCard title="Today — Income"          value={fmt(dash?.todayIncome ?? 0)}   icon={<ArrowUpOutlined />}       color="success" loading={isLoading} />
+        <KpiCard title="Today — Expenses"        value={fmt(dash?.todayExpenses ?? 0)} icon={<ArrowDownOutlined />}     color="danger"  loading={isLoading} />
+        <KpiCard title="Today — Net"             value={fmt(todayNet)}                  icon={<BarChartOutlined />}      color={todayNet >= 0 ? 'success' : 'danger'} loading={isLoading} />
+        <KpiCard title="Last 30 Days — Income"   value={fmt(dash?.monthIncome ?? 0)}   icon={<RiseOutlined />}          color="primary" loading={isLoading} />
+        <KpiCard title="Last 30 Days — Expenses" value={fmt(dash?.monthExpenses ?? 0)} icon={<FallOutlined />}          color="warning" loading={isLoading} />
+        <KpiCard title="Last 30 Days — Net"      value={fmt(monthNet)}                  icon={<DollarCircleOutlined />}  color={monthNet >= 0 ? 'primary' : 'danger'} loading={isLoading} />
+      </div>
 
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Card title="Income by Source — Last 30 Days" loading={isLoading}>
-            <Table
-              rowKey="source"
-              size="small"
-              columns={incomeColumns}
-              dataSource={dash?.monthIncomeBySource ?? []}
-              pagination={false}
-              locale={{ emptyText: 'No income recorded this month' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={12}>
-          <Card title="Expenses by Category — Last 30 Days" loading={isLoading}>
-            <Table
-              rowKey="category"
-              size="small"
-              columns={expenseColumns}
-              dataSource={dash?.monthExpenseByCategory ?? []}
-              pagination={false}
-              locale={{ emptyText: 'No expenses recorded this month' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-    </>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card title="Income by Source — Last 30 Days" loading={isLoading} className="medical-card">
+          <Table
+            rowKey="source"
+            size="small"
+            columns={incomeColumns}
+            dataSource={dash?.monthIncomeBySource ?? []}
+            pagination={false}
+            locale={{ emptyText: 'No income recorded this month' }}
+          />
+        </Card>
+        <Card title="Expenses by Category — Last 30 Days" loading={isLoading} className="medical-card">
+          <Table
+            rowKey="category"
+            size="small"
+            columns={expenseColumns}
+            dataSource={dash?.monthExpenseByCategory ?? []}
+            pagination={false}
+            locale={{ emptyText: 'No expenses recorded this month' }}
+          />
+        </Card>
+      </div>
+    </div>
   )
 }

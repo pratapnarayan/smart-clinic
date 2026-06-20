@@ -5,21 +5,18 @@ import { ConfigProvider, App as AntApp, Spin } from 'antd'
 import axios from 'axios'
 import { router } from '@/router'
 import { useAuthStore } from '@/store/authStore'
+import { antdTheme } from '@/theme/antdTheme'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30_000,
       retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 })
 
-/**
- * On every app load, if the user is authenticated, refresh the access token.
- * This ensures the JWT always reflects the latest role permissions even when
- * modules are added after the original login.
- */
 function TokenGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, refreshToken, setTokens, logout } = useAuthStore()
   const [ready, setReady] = useState(!isAuthenticated)
@@ -35,11 +32,9 @@ function TokenGuard({ children }: { children: React.ReactNode }) {
         setTokens(data.data.accessToken, data.data.refreshToken)
       })
       .catch((err) => {
-        // 401 means the refresh token itself is invalid/expired → force re-login
         if (err?.response?.status === 401) {
           logout()
         }
-        // Network errors or 5xx: proceed with the existing token
       })
       .finally(() => setReady(true))
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,8 +42,11 @@ function TokenGuard({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
+      <div className="flex items-center justify-center h-screen bg-background-primary">
+        <div className="text-center">
+          <Spin size="large" className="mb-4" />
+          <p className="text-sm text-text-muted">Authenticating...</p>
+        </div>
       </div>
     )
   }
@@ -59,16 +57,7 @@ function TokenGuard({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: '#1677ff',
-            borderRadius: 6,
-            fontFamily:
-              "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-          },
-        }}
-      >
+      <ConfigProvider theme={antdTheme}>
         <AntApp>
           <TokenGuard>
             <RouterProvider router={router} />

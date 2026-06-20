@@ -81,7 +81,7 @@ export function ItemListPage() {
   ].filter(c => Object.keys(c).length > 0)
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Inventory Items"
         subtitle="Item catalogue with current stock levels"
@@ -95,6 +95,7 @@ export function ItemListPage() {
       />
 
       <Card
+        className="medical-card"
         title={
           <Space wrap>
             <Input.Search
@@ -230,6 +231,6 @@ export function ItemListPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

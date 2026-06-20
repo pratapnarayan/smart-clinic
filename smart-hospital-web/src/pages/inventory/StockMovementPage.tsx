@@ -59,7 +59,7 @@ export function StockMovementPage() {
   )
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Stock Movements"
         subtitle="All goods received and issued to departments"
@@ -72,7 +72,7 @@ export function StockMovementPage() {
             key: 'receipts',
             label: `Receipts (${receipts?.total ?? 0})`,
             children: (
-              <Card
+              <Card className="medical-card"
                 title={
                   <Space wrap>
                     {dateFilter}
@@ -102,7 +102,7 @@ export function StockMovementPage() {
             key: 'issues',
             label: `Issues (${issues?.total ?? 0})`,
             children: (
-              <Card
+              <Card className="medical-card"
                 title={
                   <Space wrap>
                     {dateFilter}
@@ -130,6 +130,6 @@ export function StockMovementPage() {
           },
         ]}
       />
-    </>
+    </div>
   )
 }

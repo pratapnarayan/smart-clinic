@@ -1,64 +1,99 @@
-import { DatePicker, Space, Button } from 'antd'
-import { FilterOutlined, ReloadOutlined } from '@ant-design/icons'
-import dayjs, { type Dayjs } from 'dayjs'
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { DatePicker, Button, Tooltip } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
+import { cn } from '@/utils/cn'
 
 const { RangePicker } = DatePicker
 
-const DEFAULT_FROM = () => dayjs().subtract(29, 'day').format('YYYY-MM-DD')
-const DEFAULT_TO   = () => dayjs().format('YYYY-MM-DD')
+type DatePreset = 'today' | '7d' | '30d' | '90d' | 'custom'
 
-export function AnalyticsFilter() {
-  const [params, setParams] = useSearchParams()
+interface AnalyticsFilterProps {
+  onChange?: (startDate: string, endDate: string) => void
+  className?: string
+}
 
-  // Seed default dates into the URL so ExportToolbar always has them
-  useEffect(() => {
-    if (!params.get('from') || !params.get('to')) {
-      const next = new URLSearchParams(params)
-      if (!next.get('from')) next.set('from', DEFAULT_FROM())
-      if (!next.get('to'))   next.set('to', DEFAULT_TO())
-      setParams(next, { replace: true })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+const presets: { label: string; value: DatePreset; days: number }[] = [
+  { label: 'Today',       value: 'today', days: 0  },
+  { label: 'Last 7 Days', value: '7d',    days: 7  },
+  { label: 'Last 30 Days',value: '30d',   days: 30 },
+  { label: 'Last 90 Days',value: '90d',   days: 90 },
+]
 
-  const from = params.get('from') ? dayjs(params.get('from')) : dayjs().subtract(29, 'day')
-  const to = params.get('to') ? dayjs(params.get('to')) : dayjs()
+export function AnalyticsFilter({ onChange, className }: AnalyticsFilterProps) {
+  const [, setSearchParams] = useSearchParams()
+  const [activePreset, setActivePreset] = useState<DatePreset>('30d')
+  const [customRange, setCustomRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null)
 
-  const handleChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-    if (dates?.[0] && dates?.[1]) {
-      const next = new URLSearchParams(params)
-      next.set('from', dates[0].format('YYYY-MM-DD'))
-      next.set('to', dates[1].format('YYYY-MM-DD'))
-      setParams(next)
+  const handlePresetClick = (preset: DatePreset, days: number) => {
+    setActivePreset(preset)
+    setCustomRange(null)
+    const end   = dayjs()
+    const start = days === 0 ? end : end.subtract(days, 'day')
+    const s = start.format('YYYY-MM-DD')
+    const e = end.format('YYYY-MM-DD')
+    setSearchParams({ from: s, to: e })
+    onChange?.(s, e)
+  }
+
+  const handleCustomRangeChange = (dates: [dayjs.Dayjs, dayjs.Dayjs] | null) => {
+    if (dates) {
+      setActivePreset('custom')
+      setCustomRange(dates)
+      const s = dates[0].format('YYYY-MM-DD')
+      const e = dates[1].format('YYYY-MM-DD')
+      setSearchParams({ from: s, to: e })
+      onChange?.(s, e)
     }
   }
 
-  const handleReset = () => {
-    const next = new URLSearchParams(params)
-    next.set('from', DEFAULT_FROM())
-    next.set('to', DEFAULT_TO())
-    setParams(next)
+  const handleRefresh = () => {
+    if (activePreset !== 'custom') {
+      const preset = presets.find((p) => p.value === activePreset)
+      if (preset) handlePresetClick(preset.value, preset.days)
+    } else if (customRange) {
+      const s = customRange[0].format('YYYY-MM-DD')
+      const e = customRange[1].format('YYYY-MM-DD')
+      setSearchParams({ from: s, to: e })
+      onChange?.(s, e)
+    }
   }
 
   return (
-    <Space style={{ marginBottom: 16 }}>
-      <FilterOutlined style={{ color: '#1677ff' }} />
-      <RangePicker
-        value={[from, to]}
-        onChange={handleChange}
-        format="DD MMM YYYY"
-        allowClear={false}
-        presets={[
-          { label: 'Last 7 days', value: [dayjs().subtract(6, 'day'), dayjs()] },
-          { label: 'Last 30 days', value: [dayjs().subtract(29, 'day'), dayjs()] },
-          { label: 'Last 90 days', value: [dayjs().subtract(89, 'day'), dayjs()] },
-          { label: 'This month', value: [dayjs().startOf('month'), dayjs()] },
-          { label: 'This year', value: [dayjs().startOf('year'), dayjs()] },
-        ]}
-      />
-      <Button icon={<ReloadOutlined />} onClick={handleReset} size="small">Reset</Button>
-    </Space>
+    <div className={cn('flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6', className)}>
+      <div className="flex flex-wrap items-center gap-2">
+        {presets.map((preset) => (
+          <Button
+            key={preset.value}
+            type={activePreset === preset.value ? 'primary' : 'default'}
+            size="small"
+            onClick={() => handlePresetClick(preset.value, preset.days)}
+            className={cn(
+              'rounded-lg transition-all',
+              activePreset === preset.value ? 'shadow-glow-primary' : 'hover:bg-neutral-100'
+            )}
+          >
+            {preset.label}
+          </Button>
+        ))}
+        <RangePicker
+          size="small"
+          className="rounded-lg"
+          value={customRange}
+          onChange={handleCustomRangeChange as never}
+          format="DD MMM YYYY"
+          allowClear={false}
+        />
+      </div>
+      <Tooltip title="Refresh data">
+        <Button
+          icon={<ReloadOutlined />}
+          size="small"
+          onClick={handleRefresh}
+          className="rounded-lg hover:bg-neutral-100"
+        />
+      </Tooltip>
+    </div>
   )
 }
