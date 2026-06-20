@@ -54,7 +54,7 @@ function BillReceipt({ bill, onNew }: { bill: PharmacyBill; onNew: () => void })
         </Button>
       </div>
 
-      <Card id="pharmacy-bill-receipt" style={{ maxWidth: 720, margin: '0 auto' }}>
+      <Card id="pharmacy-bill-receipt" className="medical-card" style={{ maxWidth: 720, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', borderBottom: '2px solid #1677ff', paddingBottom: 12, marginBottom: 16 }}>
           <Typography.Title level={3} style={{ margin: 0, color: '#1677ff' }}>
@@ -258,13 +258,13 @@ export function PharmacyBillPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="New Pharmacy Bill"
         breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Pharmacy Bill' }]}
       />
 
-      <Card title="Bill Details" style={{ marginBottom: 16 }}>
+      <Card title="Bill Details" className="medical-card">
         <Form form={form} layout="vertical">
           <Form.Item name="patientId" label="Patient (optional for OTC sale)">
             <Select
@@ -287,7 +287,7 @@ export function PharmacyBillPage() {
         </Form>
       </Card>
 
-      <Card title="Add Medicines" style={{ marginBottom: 16 }}>
+      <Card title="Add Medicines" className="medical-card">
         <Form form={form} layout="inline">
           <Form.Item name="medicineId" label="Medicine">
             <Select
@@ -327,7 +327,7 @@ export function PharmacyBillPage() {
       </Card>
 
       {items.length > 0 && (
-        <Card title="Bill Items">
+        <Card title="Bill Items" className="medical-card">
           <Table
             rowKey="batchId"
             size="small"

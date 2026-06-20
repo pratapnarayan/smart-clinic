@@ -42,7 +42,7 @@ export function OpdVisitPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={visit.visitNumber}
         subtitle={`${visit.patientName} · ${formatDate(visit.visitDate)}`}
@@ -58,7 +58,7 @@ export function OpdVisitPage() {
       />
 
       {/* Visit summary */}
-      <Card className="mb-4">
+      <Card className="medical-card">
         <Descriptions bordered size="small" column={{ xs: 1, sm: 2, lg: 3 }}>
           <Descriptions.Item label="Visit Status">
             <Tag color={statusColors[visit.visitStatus]}>{visit.visitStatus}</Tag>
@@ -101,7 +101,7 @@ export function OpdVisitPage() {
           key: 'diagnosis',
           label: 'Clinical Notes',
           children: (
-            <Card>
+            <Card className="medical-card">
               <Form
                 form={diagnosisForm}
                 layout="vertical"
@@ -143,7 +143,7 @@ export function OpdVisitPage() {
           key: 'charges',
           label: `Charges (${visit.charges.length})`,
           children: (
-            <Card>
+            <Card className="medical-card">
               <Table
                 rowKey="id"
                 size="small"
@@ -170,7 +170,7 @@ export function OpdVisitPage() {
           key: 'prescription',
           label: 'Prescription',
           children: (
-            <Card>
+            <Card className="medical-card">
               {visit.prescription && (
                 <>
                   <Alert
@@ -208,7 +208,7 @@ export function OpdVisitPage() {
                   {(fields, { add, remove }) => (
                     <>
                       {fields.map(({ key, name }) => (
-                        <Card key={key} size="small" style={{ marginBottom: 8 }}
+                        <Card key={key} size="small" className="medical-card" style={{ marginBottom: 8 }}
                           extra={<Button danger size="small" onClick={() => remove(name)}>Remove</Button>}
                         >
                           <Form.Item name={[name, 'medicineName']} label="Medicine" rules={[{ required: true }]}>

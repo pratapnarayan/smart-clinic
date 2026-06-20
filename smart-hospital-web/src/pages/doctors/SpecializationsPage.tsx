@@ -51,7 +51,7 @@ export function SpecializationsPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Specializations"
         subtitle="Manage medical specialization categories"
@@ -63,7 +63,7 @@ export function SpecializationsPage() {
           ) : undefined
         }
       />
-      <Card>
+      <Card className="medical-card">
         <Table
           rowKey="id"
           columns={columns}
@@ -94,6 +94,6 @@ export function SpecializationsPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

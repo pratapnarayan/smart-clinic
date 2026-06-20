@@ -10,6 +10,7 @@ interface AuthState {
 
   setSession: (accessToken: string, refreshToken: string, user: UserProfile) => void
   setTokens: (accessToken: string, refreshToken: string) => void
+  setUser: (user: UserProfile | null) => void
   logout: () => void
   hasPermission: (permission: string) => boolean
   hasRole: (role: string) => boolean
@@ -28,6 +29,9 @@ export const useAuthStore = create<AuthState>()(
 
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken }),
+
+      setUser: (user) =>
+        set({ user }),
 
       logout: () =>
         set({ accessToken: null, refreshToken: null, user: null, isAuthenticated: false }),
@@ -56,7 +60,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
-        user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
     }

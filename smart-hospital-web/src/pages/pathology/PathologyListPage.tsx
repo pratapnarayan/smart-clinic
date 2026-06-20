@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Tag, Button, Select, Card, Row, Col, Statistic, Space } from 'antd'
+import { Table, Tag, Button, Select, Card, Space } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { PlusOutlined, ExperimentOutlined } from '@ant-design/icons'
+import { PlusOutlined, ExperimentOutlined, ClockCircleOutlined, PlayCircleOutlined, CheckCircleOutlined, UnorderedListOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { PageHeader } from '@/components/common'
+import { KpiCard } from '@/components/analytics'
 import { useLabOrders, usePathologyDashboard } from '@/hooks/usePathology'
 import { useAuthStore } from '@/store/authStore'
 import type { LabOrder, LabOrderStatus } from '@/types'
@@ -70,7 +71,7 @@ export function PathologyListPage() {
   ]
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Pathology — Lab Orders"
         subtitle="Manage lab test orders and results"
@@ -84,16 +85,17 @@ export function PathologyListPage() {
       />
 
       {dash && (
-        <Row gutter={16} style={{ marginBottom: 24 }}>
-          <Col span={4}><Card><Statistic title="Pending"          value={dash.pendingOrders}    /></Card></Col>
-          <Col span={4}><Card><Statistic title="Sample Collected" value={dash.sampleCollected}  valueStyle={{ color: '#1677ff' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="In Progress"      value={dash.inProgressOrders} valueStyle={{ color: '#faad14' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="Completed"        value={dash.completedToday}   valueStyle={{ color: '#52c41a' }} /></Card></Col>
-          <Col span={4}><Card><Statistic title="Tests in Catalog" value={dash.totalTests}       /></Card></Col>
-        </Row>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <KpiCard title="Pending" value={dash.pendingOrders.toString()} icon={<ClockCircleOutlined />} color="warning" />
+          <KpiCard title="Sample Collected" value={dash.sampleCollected.toString()} icon={<ExperimentOutlined />} color="primary" />
+          <KpiCard title="In Progress" value={dash.inProgressOrders.toString()} icon={<PlayCircleOutlined />} color="cyan" />
+          <KpiCard title="Completed" value={dash.completedToday.toString()} icon={<CheckCircleOutlined />} color="success" />
+          <KpiCard title="Tests in Catalog" value={dash.totalTests.toString()} icon={<UnorderedListOutlined />} color="purple" />
+        </div>
       )}
 
       <Card
+        className="medical-card"
         title={
           <Space>
             <ExperimentOutlined />
@@ -127,6 +129,6 @@ export function PathologyListPage() {
       </Card>
 
       <LabOrderFormModal open={orderOpen} onClose={() => setOrderOpen(false)} />
-    </>
+    </div>
   )
 }

@@ -25,7 +25,7 @@ export function PatientDetailPage() {
   const { data: upcomingApts } = usePatientUpcomingAppointments(id!)
   const { mutate: cancelApt } = useCancelAppointment()
 
-  if (isLoading) return <Spin size="large" className="flex justify-center mt-20" />
+  if (isLoading) return <div className="flex justify-center items-center mt-20"><Spin size="large" /></div>
   if (isError || !patient) return <Alert type="error" message="Patient not found" />
 
   const visitColumns: TableProps<OpdVisit>['columns'] = [
@@ -52,7 +52,7 @@ export function PatientDetailPage() {
   ]
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={`${patient.firstName} ${patient.lastName}`}
         subtitle={`Registered ${formatDate(patient.createdAt)}`}
@@ -72,7 +72,7 @@ export function PatientDetailPage() {
         }
       />
 
-      <Card className="mb-4">
+      <Card className="medical-card">
         <Descriptions column={{ xs: 1, sm: 2, lg: 3 }} bordered size="small">
           <Descriptions.Item label="Patient ID" span={3}>
             <Typography.Text code copyable={{ text: patient.id }}>
@@ -108,6 +108,7 @@ export function PatientDetailPage() {
             label: `Upcoming Appointments${upcomingApts?.length ? ` (${upcomingApts.length})` : ''}`,
             children: (
               <Card
+                className="medical-card"
                 extra={
                   <Button icon={<CalendarOutlined />} size="small" type="primary"
                     onClick={() => setApptOpen(true)}>
@@ -154,6 +155,7 @@ export function PatientDetailPage() {
             label: 'OPD History',
             children: (
               <Card
+                className="medical-card"
                 extra={
                   <Button
                     type="primary" size="small" icon={<PlusOutlined />}
@@ -177,7 +179,7 @@ export function PatientDetailPage() {
             key: 'pharmacy',
             label: 'Pharmacy Bills',
             children: (
-              <Card>
+              <Card className="medical-card">
                 <p className="text-gray-400">Pharmacy bill history — coming in Phase 1c wire-up.</p>
               </Card>
             ),

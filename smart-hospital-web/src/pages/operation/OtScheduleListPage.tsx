@@ -84,7 +84,7 @@ export function OtScheduleListPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="OT Schedules"
         subtitle="Operation theatre scheduling and management"
@@ -97,7 +97,7 @@ export function OtScheduleListPage() {
         }
       />
 
-      <Card
+      <Card className="medical-card"
         title={
           <Space wrap>
             <DatePicker value={date} onChange={d => { if (d) { setDate(d); setPage(0) } }} />
@@ -203,6 +203,6 @@ export function OtScheduleListPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

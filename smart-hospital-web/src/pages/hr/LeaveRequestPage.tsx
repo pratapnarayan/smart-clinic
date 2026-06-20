@@ -71,7 +71,7 @@ export function LeaveRequestPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Leave Requests"
         subtitle="Apply and manage staff leave"
@@ -84,7 +84,7 @@ export function LeaveRequestPage() {
         }
       />
 
-      <Card
+      <Card className="medical-card"
         title={
           <Select
             value={status}
@@ -126,6 +126,6 @@ export function LeaveRequestPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Button, Tag, DatePicker, Space, type TableProps } from 'antd'
+import { Table, Button, Tag, DatePicker, Space, Card, type TableProps } from 'antd'
 import { PlusOutlined, EyeOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useVisitsByDate } from '@/hooks/useOpdVisits'
@@ -48,7 +48,7 @@ export function OpdListPage() {
   ]
 
   return (
-    <div>
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="OPD Visits"
         subtitle={`${data?.total ?? 0} visit(s) on ${date.format('DD MMM YYYY')}`}
@@ -63,14 +63,17 @@ export function OpdListPage() {
         }
       />
 
-      <Table
-        rowKey="id"
-        dataSource={data?.content}
-        columns={columns}
-        loading={isLoading}
-        pagination={false}
-        onRow={(r) => ({ onDoubleClick: () => navigate(`/opd/${r.id}`) })}
-      />
+      <Card className="medical-card" styles={{ body: { padding: 0 } }}>
+        <Table
+          rowKey="id"
+          dataSource={data?.content}
+          columns={columns}
+          loading={isLoading}
+          pagination={false}
+          className="[&_.ant-table-thead>tr>th]:bg-neutral-50 [&_.ant-table-thead>tr>th]:font-semibold"
+          onRow={(r) => ({ onDoubleClick: () => navigate(`/opd/${r.id}`) })}
+        />
+      </Card>
 
       <OpdVisitFormModal open={showForm} onClose={() => setShowForm(false)} />
     </div>
