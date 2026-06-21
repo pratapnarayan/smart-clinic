@@ -1,0 +1,13 @@
+package com.smartclinic.modules.radiology.repository;
+
+import com.smartclinic.modules.radiology.domain.ImagingStudy;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface ImagingStudyRepository extends JpaRepository<ImagingStudy, UUID> {
+    List<ImagingStudy> findByModalityIdAndActiveTrue(UUID modalityId);
+    List<ImagingStudy> findByActiveTrue();
+    boolean existsByCodeIgnoreCase(String code);
+}

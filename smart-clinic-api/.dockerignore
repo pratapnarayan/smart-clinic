@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+scripts/
+src/test/
+.git/
+.gitignore
+*.md
