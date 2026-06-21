@@ -7,7 +7,7 @@
 
 ## 1. Scope
 
-Implement a world-class **Reports & Analytics** module for SmartHospital HMS. This is a primary USP showcased during client demos and must deliver an enterprise healthcare intelligence platform feel.
+Implement a world-class **Reports & Analytics** module for SmartClinic HMS. This is a primary USP showcased during client demos and must deliver an enterprise healthcare intelligence platform feel.
 
 **In scope (Phase 1):**
 - 8 analytical dashboards with KPI cards, ApexCharts visualisations, date-range filters, and PDF/Excel export

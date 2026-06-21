@@ -1,0 +1,49 @@
+package com.smartclinic.modules.radiology.domain;
+
+import com.smartclinic.core.audit.CreatedOnlyAuditEntity;
+import jakarta.persistence.*;
+
+import java.util.UUID;
+
+@Entity
+@Table(name = "imaging_modalities")
+public class ImagingModality extends CreatedOnlyAuditEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String name;
+
+    @Column(nullable = false, unique = true, length = 20)
+    private String code;
+
+    @Column(length = 300)
+    private String description;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    protected ImagingModality() {}
+
+    public UUID    getId()          { return id; }
+    public String  getName()        { return name; }
+    public String  getCode()        { return code; }
+    public String  getDescription() { return description; }
+    public boolean isActive()       { return active; }
+
+    public void setName(String v)        { this.name        = v; }
+    public void setCode(String v)        { this.code        = v; }
+    public void setDescription(String v) { this.description = v; }
+    public void setActive(boolean v)     { this.active      = v; }
+
+    public static Builder builder() { return new Builder(); }
+    public static final class Builder {
+        private final ImagingModality m = new ImagingModality();
+        public Builder name(String v)        { m.name        = v; return this; }
+        public Builder code(String v)        { m.code        = v; return this; }
+        public Builder description(String v) { m.description = v; return this; }
+        public ImagingModality build()       { return m; }
+    }
+}

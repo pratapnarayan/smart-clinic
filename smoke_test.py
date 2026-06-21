@@ -1,5 +1,5 @@
 """
-SmartHospital Full Smoke Test — headed Chrome.
+SmartClinic Full Smoke Test — headed Chrome.
 Usage:  python -X utf8 smoke_test.py
 """
 

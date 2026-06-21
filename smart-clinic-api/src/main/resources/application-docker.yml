@@ -1,0 +1,41 @@
+# Active when SPRING_PROFILES_ACTIVE=docker
+# Used for both local Docker Compose and Oracle Cloud deployment.
+# All secrets come from environment variables — nothing hard-coded here.
+
+spring:
+  datasource:
+    url:      ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 25
+      minimum-idle:      5
+      connection-timeout: 30000
+      idle-timeout:      600000
+      max-lifetime:      1800000
+
+  jpa:
+    show-sql: false
+
+  flyway:
+    out-of-order: false
+
+
+app:
+  cors:
+    # Pass as comma-separated list for multiple origins:
+    # CORS_ORIGINS=http://localhost,https://yourdomain.com
+    allowed-origins: ${CORS_ORIGINS:http://localhost}
+  jwt:
+    secret: ${JWT_SECRET}
+  token-store: memory
+
+logging:
+  level:
+    root:            WARN
+    com.smartclinic: INFO
+  file:
+    name: /var/log/smartclinic/app.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [tenant:%X{tenantId}] %-5level %logger{36} - %msg%n"
+    file:    "%d{yyyy-MM-dd HH:mm:ss} [%thread] [tenant:%X{tenantId}] %-5level %logger{36} - %msg%n"
