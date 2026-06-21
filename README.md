@@ -1,4 +1,4 @@
-# SmartHospital
+# SmartClinic
 
 A full-stack, modular-monolith Hospital Management System built with **Spring Boot 3** and **React 19**.  
 Designed as a production-grade hospital software — 15 clinical and administrative modules, schema-per-tenant multi-tenancy, granular RBAC, and a rich analytics layer with Excel and PDF export.
@@ -29,7 +29,7 @@ Designed as a production-grade hospital software — 15 clinical and administrat
 
 ## Overview
 
-SmartHospital is a comprehensive Hospital Management System covering the full clinical and administrative workflow of a hospital — from patient registration and outpatient consultations, through inpatient admissions, pharmacy, pathology, radiology, HR, finance, inventory, blood bank, and operation theatre management — topped by a dedicated **Reports & Analytics** layer that aggregates data from all modules into interactive dashboards with one-click Excel and PDF export.
+SmartClinic is a comprehensive Hospital Management System covering the full clinical and administrative workflow of a hospital — from patient registration and outpatient consultations, through inpatient admissions, pharmacy, pathology, radiology, HR, finance, inventory, blood bank, and operation theatre management — topped by a dedicated **Reports & Analytics** layer that aggregates data from all modules into interactive dashboards with one-click Excel and PDF export.
 
 **Key design goals:**
 
@@ -84,7 +84,7 @@ SmartHospital is a comprehensive Hospital Management System covering the full cl
 
 ## Tech Stack
 
-### Backend (`smart-hospital-api/`)
+### Backend (`smart-clinic-api/`)
 
 | Concern | Technology |
 |---|---|
@@ -102,7 +102,7 @@ SmartHospital is a comprehensive Hospital Management System covering the full cl
 | Excel Export | Apache POI 5.2.5 (multi-sheet XLSX with styled headers) |
 | PDF Export | iText 7 (KPI grids, bar charts, trend tables) |
 
-### Frontend (`smart-hospital-web/`)
+### Frontend (`smart-clinic-web/`)
 
 | Concern | Technology |
 |---|---|
@@ -201,18 +201,18 @@ Append `?demo=true` to any analytics URL to force demo data regardless of the ba
 Run the provided SQL script **once** as the PostgreSQL superuser to create the database and the first tenant schema:
 
 ```bash
-psql -U postgres -f smart-hospital-api/scripts/db-setup-dev.sql
+psql -U postgres -f smart-clinic-api/scripts/db-setup-dev.sql
 ```
 
 What it does:
-1. Creates the `smarthospital` database (skips if already exists)
+1. Creates the `smartclinic` database (skips if already exists)
 2. Creates the `hospital_001` schema inside it
 3. Flyway will create all tables on first application startup
 
 To add more tenant schemas:
 
 ```sql
-\c smarthospital
+\c smartclinic
 CREATE SCHEMA IF NOT EXISTS hospital_002;
 ```
 
@@ -226,7 +226,7 @@ No additional configuration is required for local development — the `dev` prof
 
 | Setting | Dev Default |
 |---------|-------------|
-| DB URL | `jdbc:postgresql://localhost:5432/smarthospital` |
+| DB URL | `jdbc:postgresql://localhost:5432/smartclinic` |
 | DB User | `postgres` |
 | DB Password | `postgres` |
 | JWT Secret | `dev-secret-key-change-in-prod-min32c` |
@@ -234,8 +234,8 @@ No additional configuration is required for local development — the `dev` prof
 
 ### 2. Run from IntelliJ
 
-1. Open the `smart-hospital-api/` directory as a Maven project
-2. Edit the Run Configuration for `SmartHospitalApplication`
+1. Open the `smart-clinic-api/` directory as a Maven project
+2. Edit the Run Configuration for `SmartClinicApplication`
 3. Set **Active profiles** to `dev`
 4. Click **Run**
 
@@ -254,7 +254,7 @@ No additional configuration is required for local development — the `dev` prof
 ## Frontend Setup
 
 ```bash
-cd smart-hospital-web
+cd smart-clinic-web
 npm install
 npm run dev
 ```
@@ -273,8 +273,8 @@ npm run preview  # Preview the production build locally
 
 | Service | Command / Action | URL |
 |---------|-----------------|-----|
-| Backend | Run `SmartHospitalApplication` in IntelliJ with `dev` profile | http://localhost:8080 |
-| Frontend | `npm run dev` in `smart-hospital-web/` | http://localhost:3000 |
+| Backend | Run `SmartClinicApplication` in IntelliJ with `dev` profile | http://localhost:8080 |
+| Frontend | `npm run dev` in `smart-clinic-web/` | http://localhost:3000 |
 
 Open **http://localhost:3000** in your browser. The login page will appear.
 
@@ -297,7 +297,7 @@ Open **http://localhost:3000** in your browser. The login page will appear.
 
 | Field | Value |
 |-------|-------|
-| Email | `superadmin@smarthospital.com` |
+| Email | `superadmin@smartclinic.com` |
 | Password | `SuperAdmin@1234` |
 | Tenant ID | *(leave blank)* |
 | Access | `POST /api/platform/tenants` only |
@@ -319,15 +319,15 @@ Raw OpenAPI spec: **http://localhost:8080/v3/api-docs**
 ## Project Structure
 
 ```
-SmartHospital/
+SmartClinic/
 ├── Documents/
-│   └── SmartHospital_Architecture_Report.docx   ← Full architecture document
-├── smart-hospital-api/                           ← Spring Boot backend
+│   └── SmartClinic_Architecture_Report.docx   ← Full architecture document
+├── smart-clinic-api/                           ← Spring Boot backend
 │   ├── pom.xml
 │   ├── scripts/
 │   │   └── db-setup-dev.sql                     ← One-time DB init script
-│   └── src/main/java/com/smarthospital/
-│       ├── SmartHospitalApplication.java
+│   └── src/main/java/com/smartclinic/
+│       ├── SmartClinicApplication.java
 │       ├── core/
 │       │   ├── audit/          ← AuditEntity base class (createdAt/updatedAt/createdBy/updatedBy)
 │       │   ├── config/         ← SecurityConfig, JpaConfig, OpenApiConfig, TomcatServerConfig
@@ -356,7 +356,7 @@ SmartHospital/
 │           ├── operation/      ← OT theatres, schedules, post-op, consumables
 │           └── setup/          ← Tenant provisioning, DevDataSeeder
 │
-└── smart-hospital-web/                          ← React frontend
+└── smart-clinic-web/                          ← React frontend
     ├── vite.config.ts
     ├── package.json
     └── src/
@@ -419,7 +419,7 @@ SmartHospital/
 
 | Variable | Dev Default | Description |
 |----------|-------------|-------------|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/smarthospital` | JDBC connection URL |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/smartclinic` | JDBC connection URL |
 | `DB_USER` | `postgres` | Database username |
 | `DB_PASSWORD` | `postgres` | Database password |
 | `JWT_SECRET` | `dev-secret-key-change-in-prod-min32c` | HMAC signing secret (≥ 32 chars enforced at startup) |

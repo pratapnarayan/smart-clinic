@@ -3,9 +3,9 @@ services:
   # ── PostgreSQL 16 ────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: smarthospital-postgres
+    container_name: smartclinic-postgres
     environment:
-      POSTGRES_DB:       smarthospital
+      POSTGRES_DB:       smartclinic
       POSTGRES_USER:     ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -13,7 +13,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d smarthospital"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d smartclinic"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,15 +27,15 @@ services:
   # ── Spring Boot API ───────────────────────────────────────────────────────────
   api:
     build:
-      context: ./smart-hospital-api
+      context: ./smart-clinic-api
       dockerfile: Dockerfile
-    container_name: smarthospital-api
+    container_name: smartclinic-api
     environment:
       SPRING_PROFILES_ACTIVE: docker,dev,dev-demo
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/smarthospital
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/smartclinic
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      DB_URL:        jdbc:postgresql://postgres:5432/smarthospital
+      DB_URL:        jdbc:postgresql://postgres:5432/smartclinic
       DB_USER:       ${DB_USER}
       DB_PASSWORD:   ${DB_PASSWORD}
       JWT_SECRET:    ${JWT_SECRET}
@@ -65,9 +65,9 @@ services:
   # ── Nginx + React SPA ─────────────────────────────────────────────────────────
   web:
     build:
-      context: ./smart-hospital-web
+      context: ./smart-clinic-web
       dockerfile: Dockerfile
-    container_name: smarthospital-web
+    container_name: smartclinic-web
     ports:
       - "80:80"
     depends_on:
