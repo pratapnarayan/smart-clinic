@@ -1,5 +1,6 @@
 package com.smartclinic.modules.opd.dto;
 
+import com.smartclinic.modules.opd.domain.OpdVisit.VisitSource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -17,7 +18,7 @@ public record OpdVisitCreateRequest(
 
         @Size(max = 100) String department,
 
-        UUID doctorId,
+        UUID   doctorId,
         @Size(max = 200) String doctorName,
 
         @Size(max = 2000) String symptoms,
@@ -25,6 +26,12 @@ public record OpdVisitCreateRequest(
         @NotNull @DecimalMin("0.00")
         BigDecimal consultationFee,
 
-        @Valid List<OpdChargeRequest> charges
+        @Valid List<OpdChargeRequest> charges,
+
+        /** Set by check-in flow — null for walk-ins */
+        UUID appointmentId,
+
+        /** Defaults to WALK_IN; set to APPOINTMENT by check-in endpoint */
+        VisitSource visitSource
 
 ) {}

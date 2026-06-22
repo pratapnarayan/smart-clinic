@@ -30,4 +30,7 @@ export const opdApi = {
 
   getBill: (visitId: string) =>
     apiClient.get<ApiResponse<OpdVisit>>(`/v1/opd/visits/${visitId}/bill`),
+
+  getTodaysQueue: () =>
+    apiClient.get<ApiResponse<OpdVisit[]>>('/v1/opd/visits/queue'),
 }

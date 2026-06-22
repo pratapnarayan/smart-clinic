@@ -3,7 +3,9 @@ package com.smartclinic.modules.frontoffice.controller;
 import com.smartclinic.core.pagination.PageResponse;
 import com.smartclinic.modules.frontoffice.domain.OpdToken.TokenStatus;
 import com.smartclinic.modules.frontoffice.dto.*;
+import com.smartclinic.modules.frontoffice.dto.CheckInRequest;
 import com.smartclinic.modules.frontoffice.service.FrontOfficeService;
+import com.smartclinic.modules.opd.dto.OpdVisitResponse;
 import com.smartclinic.shared.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -111,6 +113,16 @@ public class FrontOfficeController {
             @PathVariable UUID id,
             @Valid @RequestBody AppointmentUpdateRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(service.updateAppointment(id, request)));
+    }
+
+    @PostMapping("/appointments/{id}/checkin")
+    @PreAuthorize("hasAuthority('FRONTOFFICE.EDIT')")
+    @Operation(summary = "Check in a patient — marks appointment CHECKED_IN and creates OPD visit")
+    public ResponseEntity<ApiResponse<OpdVisitResponse>> checkIn(
+            @PathVariable UUID id,
+            @RequestBody(required = false) @Valid CheckInRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(service.checkIn(id, request)));
     }
 
     @DeleteMapping("/appointments/{id}")

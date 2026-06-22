@@ -20,6 +20,15 @@ export function useVisitsByDate(date?: string, page = 0) {
   })
 }
 
+export function useOpdQueue() {
+  return useQuery({
+    queryKey: [...OPD_KEYS.lists(), 'queue'] as const,
+    queryFn: () => opdApi.getTodaysQueue().then((r) => r.data.data),
+    refetchInterval: 20_000,
+    staleTime: 10_000,
+  })
+}
+
 export function useVisitsByPatient(patientId: string) {
   return useQuery({
     queryKey: OPD_KEYS.byPatient(patientId),

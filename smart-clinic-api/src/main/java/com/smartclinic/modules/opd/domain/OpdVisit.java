@@ -87,6 +87,14 @@ public class OpdVisit extends AuditEntity {
     @Column(name = "visit_status", nullable = false, length = 20)
     private VisitStatus visitStatus = VisitStatus.REGISTERED;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visit_source", nullable = false, length = 20)
+    private VisitSource visitSource = VisitSource.WALK_IN;
+
+    /** Nullable — only set when visit was created via appointment check-in */
+    @Column(name = "appointment_id")
+    private UUID appointmentId;
+
     // ── Child collections ──
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OpdCharge> charges = new ArrayList<>();
@@ -97,6 +105,7 @@ public class OpdVisit extends AuditEntity {
     // ── Enums ──
     public enum PaymentStatus { PENDING, PAID, PARTIAL, WAIVED }
     public enum VisitStatus   { REGISTERED, IN_PROGRESS, COMPLETED, CANCELLED }
+    public enum VisitSource   { APPOINTMENT, WALK_IN }
 
     protected OpdVisit() {}
 
@@ -118,6 +127,8 @@ public class OpdVisit extends AuditEntity {
     public BigDecimal    getNetAmount()        { return netAmount; }
     public PaymentStatus getPaymentStatus()    { return paymentStatus; }
     public VisitStatus   getVisitStatus()      { return visitStatus; }
+    public VisitSource   getVisitSource()      { return visitSource; }
+    public UUID          getAppointmentId()    { return appointmentId; }
     public List<OpdCharge>  getCharges()       { return charges; }
     public Prescription  getPrescription()     { return prescription; }
 
@@ -136,6 +147,8 @@ public class OpdVisit extends AuditEntity {
     public void setDiscount(BigDecimal v)     { this.discount        = v; }
     public void setPaymentStatus(PaymentStatus v) { this.paymentStatus = v; }
     public void setVisitStatus(VisitStatus v) { this.visitStatus     = v; }
+    public void setVisitSource(VisitSource v)  { this.visitSource     = v; }
+    public void setAppointmentId(UUID v)       { this.appointmentId   = v; }
     public void setPrescription(Prescription v)  { this.prescription = v; }
 
     /** Recalculates totalCharges and netAmount from charges list + consultation fee. */
@@ -160,6 +173,8 @@ public class OpdVisit extends AuditEntity {
         public Builder doctorName(String x)      { v.doctorName     = x; return this; }
         public Builder symptoms(String x)        { v.symptoms       = x; return this; }
         public Builder consultationFee(BigDecimal x){ v.consultationFee = x; return this; }
+        public Builder visitSource(VisitSource x)  { v.visitSource    = x; return this; }
+        public Builder appointmentId(UUID x)       { v.appointmentId  = x; return this; }
         public OpdVisit build()                  { return v; }
     }
 }

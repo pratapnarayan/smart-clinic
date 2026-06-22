@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,6 +57,13 @@ public class OpdController {
             @RequestParam(defaultValue = "20") int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
         return ResponseEntity.ok(ApiResponse.ok(opdService.listByDate(date, pageable)));
+    }
+
+    @GetMapping("/visits/queue")
+    @PreAuthorize("hasAuthority('OPD.VIEW')")
+    @Operation(summary = "Today's live OPD queue — REGISTERED and IN_PROGRESS visits only")
+    public ResponseEntity<ApiResponse<List<OpdVisitResponse>>> getTodaysQueue() {
+        return ResponseEntity.ok(ApiResponse.ok(opdService.getTodaysQueue()));
     }
 
     @GetMapping("/visits/patient/{patientId}")

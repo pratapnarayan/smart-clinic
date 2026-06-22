@@ -3,7 +3,7 @@ import type { ApiResponse, PageResponse } from '@/types'
 import type {
   Appointment, OpdToken, FrontOfficeDashboard,
   BookAppointmentPayload, IssueTokenPayload,
-  AppointmentStatus, TokenStatus,
+  AppointmentStatus, TokenStatus, OpdVisit,
 } from '@/types'
 
 export const frontOfficeApi = {
@@ -37,6 +37,12 @@ export const frontOfficeApi = {
 
   cancelAppointment: (id: string) =>
     apiClient.delete(`/v1/frontoffice/appointments/${id}`),
+
+  checkIn: (appointmentId: string, payload?: { symptoms?: string; consultationFee?: number }) =>
+    apiClient.post<ApiResponse<OpdVisit>>(
+      `/v1/frontoffice/appointments/${appointmentId}/checkin`,
+      payload ?? {}
+    ),
 
   // ── Tokens ─────────────────────────────────────────────────────────────────
   issueToken: (payload: IssueTokenPayload) =>

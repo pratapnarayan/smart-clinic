@@ -107,6 +107,26 @@ export function useCancelAppointment() {
   })
 }
 
+export function useCheckIn() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      appointmentId,
+      payload,
+    }: {
+      appointmentId: string
+      payload?: { symptoms?: string; consultationFee?: number }
+    }) =>
+      frontOfficeApi.checkIn(appointmentId, payload).then((r) => r.data.data),
+    onSuccess: (visit) => {
+      qc.invalidateQueries({ queryKey: ['frontoffice'] })
+      qc.invalidateQueries({ queryKey: ['opd'] })
+      message.success(`Patient checked in — OPD visit ${visit.visitNumber} created`)
+    },
+    onError: () => message.error('Check-in failed'),
+  })
+}
+
 export function useIssueToken() {
   const qc = useQueryClient()
   return useMutation({
