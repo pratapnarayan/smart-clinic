@@ -138,17 +138,23 @@ public class FrontOfficeService {
 
     @Transactional
     public OpdVisitResponse checkIn(UUID appointmentId, CheckInRequest req) {
-        Appointment apt = findAppointmentOrThrow(appointmentId);
+        Appointment apt = appointmentRepository.findByIdForUpdate(appointmentId)
+                .orElseThrow(() -> ApiException.notFound("APPOINTMENT_NOT_FOUND",
+                        "Appointment " + appointmentId + " not found"));
 
         if (apt.getStatus() == AppointmentStatus.CHECKED_IN) {
             throw ApiException.badRequest("ALREADY_CHECKED_IN",
-                    "ALREADY_CHECKED_IN: Appointment " + apt.getAppointmentNumber() + " is already checked in");
+                    "Appointment " + apt.getAppointmentNumber() + " is already checked in");
         }
         if (apt.getStatus() == AppointmentStatus.COMPLETED
                 || apt.getStatus() == AppointmentStatus.CANCELLED
                 || apt.getStatus() == AppointmentStatus.NO_SHOW) {
             throw ApiException.badRequest("APPOINTMENT_CLOSED",
-                    "APPOINTMENT_CLOSED: Cannot check in a " + apt.getStatus() + " appointment");
+                    "Cannot check in a " + apt.getStatus() + " appointment");
+        }
+        if (!apt.getAppointmentDate().equals(LocalDate.now())) {
+            throw ApiException.badRequest("WRONG_DATE",
+                    "Can only check in today's appointments (appointment date: " + apt.getAppointmentDate() + ")");
         }
 
         apt.setStatus(AppointmentStatus.CHECKED_IN);
@@ -156,7 +162,7 @@ public class FrontOfficeService {
 
         OpdVisitCreateRequest visitReq = new OpdVisitCreateRequest(
                 apt.getPatientId(),
-                java.time.LocalDate.now(),
+                apt.getAppointmentDate(),
                 apt.getDepartment(),
                 apt.getDoctorId(),
                 apt.getDoctorName(),
