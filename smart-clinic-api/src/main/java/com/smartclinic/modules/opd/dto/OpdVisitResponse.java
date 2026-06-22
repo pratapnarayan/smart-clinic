@@ -28,6 +28,8 @@ public record OpdVisitResponse(
         BigDecimal              netAmount,
         PaymentStatus           paymentStatus,
         VisitStatus             visitStatus,
+        OpdVisit.VisitSource    visitSource,
+        UUID                    appointmentId,
         List<OpdChargeResponse> charges,
         PrescriptionResponse    prescription,
         Instant                 createdAt
@@ -42,6 +44,8 @@ public record OpdVisitResponse(
                 v.getConsultationFee(), v.getTotalCharges(),
                 v.getDiscount(), v.getNetAmount(),
                 v.getPaymentStatus(), v.getVisitStatus(),
+                v.getVisitSource(),
+                v.getAppointmentId(),
                 v.getCharges().stream().map(OpdChargeResponse::from).toList(),
                 v.getPrescription() != null ? PrescriptionResponse.from(v.getPrescription()) : null,
                 v.getCreatedAt()

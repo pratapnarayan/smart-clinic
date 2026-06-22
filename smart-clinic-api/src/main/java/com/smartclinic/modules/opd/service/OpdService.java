@@ -15,6 +15,7 @@ import com.smartclinic.modules.patient.repository.PatientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +63,8 @@ public class OpdService {
                 .doctorName(req.doctorName())
                 .symptoms(req.symptoms())
                 .consultationFee(req.consultationFee() != null ? req.consultationFee() : BigDecimal.ZERO)
+                .visitSource(req.visitSource() != null ? req.visitSource() : OpdVisit.VisitSource.WALK_IN)
+                .appointmentId(req.appointmentId())
                 .build();
 
         if (req.charges() != null) {
@@ -91,6 +94,18 @@ public class OpdService {
         LocalDate target = date != null ? date : LocalDate.now();
         return PageResponse.of(visitRepository.findByVisitDate(target, pageable)
                 .map(OpdVisitResponse::from));
+    }
+
+    /** Returns today's REGISTERED and IN_PROGRESS visits — the live OPD queue */
+    public List<OpdVisitResponse> getTodaysQueue() {
+        List<OpdVisit.VisitStatus> activeStatuses =
+                List.of(OpdVisit.VisitStatus.REGISTERED, OpdVisit.VisitStatus.IN_PROGRESS);
+        return visitRepository
+                .findByVisitDateAndVisitStatusIn(LocalDate.now(), activeStatuses,
+                        Sort.by("createdAt").ascending())
+                .stream()
+                .map(OpdVisitResponse::from)
+                .toList();
     }
 
     @Transactional

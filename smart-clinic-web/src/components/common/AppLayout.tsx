@@ -206,7 +206,7 @@ export function AppLayout() {
           defaultOpenKeys={['pharmacy']}
           items={(isClinicOPD
             ? menuItems.filter(item =>
-                ['dashboard', 'patients', 'opd', 'clinic', 'pathology', 'pharmacy', 'hr', 'analytics'].includes(item?.key as string))
+                ['dashboard', 'patients', 'opd', 'clinic', 'pathology', 'pharmacy', 'hr', 'analytics', 'frontoffice'].includes(item?.key as string))
             : menuItems
           ).filter(item => canSeeMenuItem(item?.key as string))}
         />

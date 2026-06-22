@@ -32,6 +32,7 @@ export function OpdVisitFormModal({ open, onClose, preselectedPatientId }: Props
   const [selectedDeptId, setSelectedDeptId] = useState<string | undefined>()
   const [doctorSearch, setDoctorSearch]     = useState('')
   const [debouncedDoctor, setDebouncedDoc]  = useState('')
+  const [selectedDoctorName, setSelectedDoctorName] = useState<string | undefined>()
   useEffect(() => {
     const t = setTimeout(() => setDebouncedDoc(doctorSearch), 300)
     return () => clearTimeout(t)
@@ -39,15 +40,10 @@ export function OpdVisitFormModal({ open, onClose, preselectedPatientId }: Props
   const { data: employeePage, isFetching: searchingDoctors } = useEmployees(
     selectedDeptId, debouncedDoctor || undefined, 0
   )
-  // Doctor name string is the form value — OpdVisitCreateRequest only has doctorName, no doctorId
-  // Strip a pre-existing "Dr." title before re-adding it, so an employee record
-  // that already has the title baked into firstName (legacy data) doesn't render
-  // as "Dr. Dr. <name>".
-  const doctorOptions = (employeePage?.content ?? []).map(e => {
-    const cleanFirstName = e.firstName.replace(/^dr\.?\s+/i, '')
-    const displayName = `Dr. ${cleanFirstName} ${e.lastName}`
-    return { value: displayName, label: displayName }
-  })
+  const doctorOptions = (employeePage?.content ?? []).map((e) => ({
+    value: e.id,
+    label: `Dr. ${e.firstName} ${e.lastName}`,
+  }))
 
   // ── Reset on open ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -55,45 +51,36 @@ export function OpdVisitFormModal({ open, onClose, preselectedPatientId }: Props
       setPatientQuery('')
       setDoctorSearch(''); setDebouncedDoc('')
       setSelectedDeptId(undefined)
+      setSelectedDoctorName(undefined)
     }
-  }, [open])
-
-  // ── Escape-key guard ───────────────────────────────────────────────────────
-  // Pressing Escape while a Select dropdown (Patient/Department/Doctor) is open
-  // was closing BOTH the dropdown and this Modal at once, which raced their two
-  // closing animations and left the Modal's DOM in a corrupted, collapsed state
-  // until a full page reload. A capture-phase listener lets the dropdown's own
-  // Escape handling run first and swallows the keypress before antd Modal's
-  // bubble-phase listener sees it, so only the dropdown closes on the first press.
-  useEffect(() => {
-    if (!open) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      const openDropdown = document.querySelector('.ant-select-dropdown:not(.ant-select-dropdown-hidden)')
-      if (openDropdown) {
-        e.stopPropagation()
-      }
-    }
-    document.addEventListener('keydown', onKeyDown, { capture: true })
-    return () => document.removeEventListener('keydown', onKeyDown, { capture: true })
   }, [open])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const onDeptChange = (deptName: string) => {
     const dept = (departments ?? []).find(d => d.name === deptName)
     setSelectedDeptId(dept?.id)
-    form.setFieldValue('doctorName', undefined)
+    form.setFieldValue('doctorId', undefined)
+    setSelectedDoctorName(undefined)
     setDoctorSearch(''); setDebouncedDoc('')
   }
 
-  function handleFinish(values: OpdVisitCreateRequest & { visitDate: dayjs.Dayjs }) {
+  function handleFinish(values: OpdVisitCreateRequest & { visitDate: dayjs.Dayjs; doctorId?: string }) {
     create(
       {
         ...values,
-        visitDate: values.visitDate?.format('YYYY-MM-DD'),
+        visitDate:       values.visitDate?.format('YYYY-MM-DD'),
         consultationFee: values.consultationFee ?? 0,
+        doctorId:        values.doctorId,
+        doctorName:      selectedDoctorName,
+        visitSource:     'WALK_IN',
       },
-      { onSuccess: () => { form.resetFields(); onClose() } }
+      {
+        onSuccess: () => {
+          form.resetFields()
+          setSelectedDoctorName(undefined)
+          onClose()
+        },
+      }
     )
   }
 
@@ -152,7 +139,7 @@ export function OpdVisitFormModal({ open, onClose, preselectedPatientId }: Props
         </Row>
 
         {/* ── Consulting Doctor ───────────────────────────────────────────── */}
-        <Form.Item name="doctorName" label="Consulting Doctor">
+        <Form.Item name="doctorId" label="Consulting Doctor">
           <Select
             showSearch
             allowClear
@@ -161,6 +148,7 @@ export function OpdVisitFormModal({ open, onClose, preselectedPatientId }: Props
             onSearch={setDoctorSearch}
             loading={searchingDoctors}
             options={doctorOptions}
+            onChange={(_val, option: any) => setSelectedDoctorName(option?.label)}
             notFoundContent={
               debouncedDoctor
                 ? (searchingDoctors ? 'Searching…' : 'No doctors found')

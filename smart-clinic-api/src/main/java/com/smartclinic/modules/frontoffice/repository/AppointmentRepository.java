@@ -5,8 +5,12 @@ import com.smartclinic.modules.frontoffice.domain.Appointment.AppointmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
+import java.util.Optional;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -36,6 +40,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     List<Appointment> findUpcomingByPatient(@Param("patientId") UUID patientId,
                                             @Param("fromDate") LocalDate fromDate,
                                             @Param("statuses") Collection<AppointmentStatus> statuses);
+
+    /** Acquires a row-level write lock — used by check-in to prevent concurrent double check-in. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Appointment a WHERE a.id = :id")
+    Optional<Appointment> findByIdForUpdate(@Param("id") UUID id);
 
     @Query(value = "SELECT COUNT(*) + 1 FROM appointments WHERE appointment_number LIKE CONCAT('APT-', :year, '-%')",
            nativeQuery = true)

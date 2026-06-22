@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/common'
 import { KpiCard } from '@/components/analytics'
 import {
   useAppointments, useUpcomingAppointments, useFrontOfficeDashboard,
-  useUpdateAppointment, useCancelAppointment,
+  useUpdateAppointment, useCancelAppointment, useCheckIn,
 } from '@/hooks/useFrontOffice'
 import { useAuthStore } from '@/store/authStore'
 import { formatDate } from '@/utils'
@@ -24,25 +24,46 @@ const STATUS_COLOR: Record<AppointmentStatus, string> = {
 }
 
 const NEXT_STATUS: Partial<Record<AppointmentStatus, AppointmentStatus>> = {
-  SCHEDULED:  'CONFIRMED',
-  CONFIRMED:  'CHECKED_IN',
-  CHECKED_IN: 'COMPLETED',
+  SCHEDULED: 'CONFIRMED',
+  // CONFIRMED → CHECKED_IN is handled by the dedicated check-in button below
+  // CHECKED_IN → COMPLETED is handled by the OPD module
 }
 
 // Per-row action buttons — each instance owns its own mutate with the correct ID.
 function RowActions({ record }: { record: Appointment }) {
-  const { mutate: updateApt, isPending: updating } = useUpdateAppointment(record.id)
+  const { mutate: updateApt, isPending: updating }   = useUpdateAppointment(record.id)
   const { mutate: cancelApt, isPending: cancelling } = useCancelAppointment()
-  const next = NEXT_STATUS[record.status]
-  const closed = record.status === 'CANCELLED' || record.status === 'COMPLETED'
+  const { mutate: checkIn,   isPending: checkingIn } = useCheckIn()
+
+  const closed     = record.status === 'CANCELLED' || record.status === 'COMPLETED'
+  const canConfirm = record.status === 'SCHEDULED'
+  const canCheckIn = record.status === 'CONFIRMED' || record.status === 'SCHEDULED'
+  const alreadyIn  = record.status === 'CHECKED_IN'
+
   return (
     <Space size="small">
-      {next && (
+      {canConfirm && (
         <Button size="small" type="primary" ghost loading={updating}
-          onClick={() => updateApt({ status: next })}>
-          → {next.replace('_', ' ')}
+          onClick={() => updateApt({ status: 'CONFIRMED' })}>
+          Confirm
         </Button>
       )}
+
+      {canCheckIn && !alreadyIn && (
+        <Button
+          size="small"
+          type="primary"
+          loading={checkingIn}
+          onClick={() => checkIn({ appointmentId: record.id })}
+        >
+          ✓ Check In
+        </Button>
+      )}
+
+      {alreadyIn && (
+        <Tag color="warning" style={{ margin: 0 }}>Checked In</Tag>
+      )}
+
       {!closed && (
         <Popconfirm title="Cancel this appointment?" onConfirm={() => cancelApt(record.id)}>
           <Button size="small" danger loading={cancelling}>Cancel</Button>

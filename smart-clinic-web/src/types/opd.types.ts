@@ -1,5 +1,6 @@
 export type VisitStatus   = 'REGISTERED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 export type PaymentStatus = 'PENDING' | 'PAID' | 'PARTIAL' | 'WAIVED'
+export type VisitSource   = 'APPOINTMENT' | 'WALK_IN'
 
 export interface OpdCharge {
   id: string
@@ -43,6 +44,8 @@ export interface OpdVisit {
   netAmount: number
   paymentStatus: PaymentStatus
   visitStatus: VisitStatus
+  visitSource: VisitSource
+  appointmentId: string | null
   charges: OpdCharge[]
   prescription: Prescription | null
   createdAt: string
@@ -52,10 +55,13 @@ export interface OpdVisitCreateRequest {
   patientId: string
   visitDate?: string
   department?: string
+  doctorId?: string
   doctorName?: string
   symptoms?: string
   consultationFee: number
   charges?: { description: string; amount: number; category?: string }[]
+  appointmentId?: string
+  visitSource?: VisitSource
 }
 
 export interface PrescriptionRequest {

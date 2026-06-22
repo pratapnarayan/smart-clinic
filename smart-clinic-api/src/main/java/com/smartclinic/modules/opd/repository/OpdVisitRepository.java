@@ -4,11 +4,13 @@ import com.smartclinic.modules.opd.domain.OpdVisit;
 import com.smartclinic.modules.opd.domain.OpdVisit.VisitStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,4 +34,9 @@ public interface OpdVisitRepository extends JpaRepository<OpdVisit, UUID> {
     long nextSequenceForYear(@Param("year") int year);
 
     Optional<OpdVisit> findByVisitNumber(String visitNumber);
+
+    List<OpdVisit> findByVisitDateAndVisitStatusIn(
+            LocalDate date,
+            Collection<VisitStatus> statuses,
+            Sort sort);
 }

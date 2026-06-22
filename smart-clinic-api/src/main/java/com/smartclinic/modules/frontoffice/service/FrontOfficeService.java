@@ -7,8 +7,13 @@ import com.smartclinic.modules.frontoffice.domain.Appointment.AppointmentStatus;
 import com.smartclinic.modules.frontoffice.domain.OpdToken;
 import com.smartclinic.modules.frontoffice.domain.OpdToken.TokenStatus;
 import com.smartclinic.modules.frontoffice.dto.*;
+import com.smartclinic.modules.frontoffice.dto.CheckInRequest;
 import com.smartclinic.modules.frontoffice.repository.AppointmentRepository;
 import com.smartclinic.modules.frontoffice.repository.OpdTokenRepository;
+import com.smartclinic.modules.opd.domain.OpdVisit;
+import com.smartclinic.modules.opd.dto.OpdVisitCreateRequest;
+import com.smartclinic.modules.opd.dto.OpdVisitResponse;
+import com.smartclinic.modules.opd.service.OpdService;
 import com.smartclinic.modules.patient.domain.Patient;
 import com.smartclinic.modules.patient.repository.PatientRepository;
 import org.slf4j.Logger;
@@ -30,13 +35,16 @@ public class FrontOfficeService {
     private final AppointmentRepository appointmentRepository;
     private final OpdTokenRepository    tokenRepository;
     private final PatientRepository     patientRepository;
+    private final OpdService            opdService;
 
     public FrontOfficeService(AppointmentRepository appointmentRepository,
                               OpdTokenRepository    tokenRepository,
-                              PatientRepository     patientRepository) {
+                              PatientRepository     patientRepository,
+                              OpdService            opdService) {
         this.appointmentRepository = appointmentRepository;
         this.tokenRepository       = tokenRepository;
         this.patientRepository     = patientRepository;
+        this.opdService            = opdService;
     }
 
     // ── Appointments ─────────────────────────────────────────────────────────
@@ -126,6 +134,50 @@ public class FrontOfficeService {
         if (req.notes()            != null) apt.setNotes(req.notes());
 
         return AppointmentResponse.from(appointmentRepository.save(apt));
+    }
+
+    @Transactional
+    public OpdVisitResponse checkIn(UUID appointmentId, CheckInRequest req) {
+        Appointment apt = appointmentRepository.findByIdForUpdate(appointmentId)
+                .orElseThrow(() -> ApiException.notFound("APPOINTMENT_NOT_FOUND",
+                        "Appointment " + appointmentId + " not found"));
+
+        if (apt.getStatus() == AppointmentStatus.CHECKED_IN) {
+            throw ApiException.badRequest("ALREADY_CHECKED_IN",
+                    "Appointment " + apt.getAppointmentNumber() + " is already checked in");
+        }
+        if (apt.getStatus() == AppointmentStatus.COMPLETED
+                || apt.getStatus() == AppointmentStatus.CANCELLED
+                || apt.getStatus() == AppointmentStatus.NO_SHOW) {
+            throw ApiException.badRequest("APPOINTMENT_CLOSED",
+                    "Cannot check in a " + apt.getStatus() + " appointment");
+        }
+        if (!apt.getAppointmentDate().equals(LocalDate.now())) {
+            throw ApiException.badRequest("WRONG_DATE",
+                    "Can only check in today's appointments (appointment date: " + apt.getAppointmentDate() + ")");
+        }
+
+        apt.setStatus(AppointmentStatus.CHECKED_IN);
+        appointmentRepository.save(apt);
+
+        OpdVisitCreateRequest visitReq = new OpdVisitCreateRequest(
+                apt.getPatientId(),
+                apt.getAppointmentDate(),
+                apt.getDepartment(),
+                apt.getDoctorId(),
+                apt.getDoctorName(),
+                req != null ? req.symptoms() : null,
+                req != null && req.consultationFee() != null
+                        ? req.consultationFee()
+                        : java.math.BigDecimal.ZERO,
+                null,
+                apt.getId(),
+                OpdVisit.VisitSource.APPOINTMENT
+        );
+
+        OpdVisitResponse visit = opdService.createVisit(visitReq);
+        log.info("Check-in: appointment {} → OPD visit {}", apt.getAppointmentNumber(), visit.visitNumber());
+        return visit;
     }
 
     @Transactional
