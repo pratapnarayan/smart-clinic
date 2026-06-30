@@ -56,7 +56,7 @@ import java.time.LocalDate;
  * in the public schema.
  */
 @Component
-@Profile("dev")
+@Profile({"dev", "seed"})
 public class ClinicDevDataSeeder {
 
     private static final Logger log = LoggerFactory.getLogger(ClinicDevDataSeeder.class);
