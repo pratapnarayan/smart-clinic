@@ -22,9 +22,9 @@ RUN apk add --no-cache gettext
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
 
-# Default API_HOST for local Docker Compose (service name = "api", port 8080).
-# Override with Railway's private hostname: api.railway.internal:8080
+# Defaults for local Docker Compose. Railway overrides both via env vars.
 ENV API_HOST=api:8080
+ENV PORT=80
 
 EXPOSE 80
 
