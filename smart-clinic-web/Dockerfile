@@ -22,12 +22,12 @@ RUN apk add --no-cache gettext
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
 
-# Defaults for local Docker Compose. Railway overrides both via env vars.
+# Defaults for local Docker Compose. Railway overrides via env vars.
 ENV API_HOST=api:8080
+ENV API_SCHEME=http
 ENV PORT=80
 
 EXPOSE 80
 
-# Substitute ${API_HOST} in the nginx template at startup, then launch nginx.
-# Only ${API_HOST} is substituted — nginx's own $variables are left untouched.
-CMD ["/bin/sh", "-c", "envsubst '${API_HOST} ${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# Substitute ${API_HOST}, ${API_SCHEME}, ${PORT} at startup, then launch nginx.
+CMD ["/bin/sh", "-c", "envsubst '${API_HOST} ${API_SCHEME} ${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

@@ -32,12 +32,14 @@ server {
 
     # ── API proxy → Spring Boot backend ──────────────────────────────────────
     # API_HOST is injected at container startup via envsubst.
-    # Local Docker Compose default: api:8080
-    # Railway: api.railway.internal:8080
+    # Local Docker Compose default: api:8080  (uses http://)
+    # Railway: smart-clinic-production-xxxx.up.railway.app  (uses https://)
+    # API_SCHEME controls http vs https — defaults to http for local compose.
     location /api/ {
-        proxy_pass         http://${API_HOST}/api/;
+        proxy_pass         ${API_SCHEME}://${API_HOST}/api/;
         proxy_http_version 1.1;
-        proxy_set_header   Host              $host;
+        proxy_ssl_server_name on;
+        proxy_set_header   Host              ${API_HOST};
         proxy_set_header   X-Real-IP         $remote_addr;
         proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto $scheme;
@@ -48,22 +50,25 @@ server {
 
     # ── Swagger UI ────────────────────────────────────────────────────────────
     location /swagger-ui/ {
-        proxy_pass         http://${API_HOST}/swagger-ui/;
+        proxy_pass         ${API_SCHEME}://${API_HOST}/swagger-ui/;
         proxy_http_version 1.1;
-        proxy_set_header   Host $host;
+        proxy_ssl_server_name on;
+        proxy_set_header   Host ${API_HOST};
     }
 
     location /v3/api-docs {
-        proxy_pass         http://${API_HOST}/v3/api-docs;
+        proxy_pass         ${API_SCHEME}://${API_HOST}/v3/api-docs;
         proxy_http_version 1.1;
-        proxy_set_header   Host $host;
+        proxy_ssl_server_name on;
+        proxy_set_header   Host ${API_HOST};
     }
 
     # ── Actuator health ───────────────────────────────────────────────────────
     location /actuator/ {
-        proxy_pass         http://${API_HOST}/actuator/;
+        proxy_pass         ${API_SCHEME}://${API_HOST}/actuator/;
         proxy_http_version 1.1;
-        proxy_set_header   Host $host;
+        proxy_ssl_server_name on;
+        proxy_set_header   Host ${API_HOST};
     }
 
     # ── React Router SPA fallback ─────────────────────────────────────────────
