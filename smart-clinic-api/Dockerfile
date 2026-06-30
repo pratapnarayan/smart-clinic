@@ -24,7 +24,8 @@ RUN mkdir -p /var/log/smartclinic \
 
 WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
-RUN chown smartclinic:smartclinic app.jar
+RUN mkdir -p /app/uploads/photos \
+ && chown -R smartclinic:smartclinic /app
 
 USER smartclinic
 
