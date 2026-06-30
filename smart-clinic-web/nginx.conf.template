@@ -1,0 +1,73 @@
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # ── Compression ───────────────────────────────────────────────────────────
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types
+        text/plain text/css text/xml text/javascript
+        application/json application/javascript application/xml
+        application/rss+xml application/atom+xml
+        image/svg+xml font/woff2;
+
+    # ── Security headers ──────────────────────────────────────────────────────
+    add_header X-Frame-Options        "SAMEORIGIN"                       always;
+    add_header X-Content-Type-Options "nosniff"                          always;
+    add_header X-XSS-Protection       "1; mode=block"                   always;
+    add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
+
+    # ── Static asset caching ──────────────────────────────────────────────────
+    location ~* \.(js|css|woff|woff2|ttf|eot|ico|png|jpg|jpeg|gif|svg|webp)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+
+    # ── API proxy → Spring Boot backend ──────────────────────────────────────
+    # API_HOST is injected at container startup via envsubst.
+    # Local Docker Compose default: api:8080
+    # Railway: api.railway.internal:8080
+    location /api/ {
+        proxy_pass         http://${API_HOST}/api/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 60s;
+    }
+
+    # ── Swagger UI ────────────────────────────────────────────────────────────
+    location /swagger-ui/ {
+        proxy_pass         http://${API_HOST}/swagger-ui/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+    }
+
+    location /v3/api-docs {
+        proxy_pass         http://${API_HOST}/v3/api-docs;
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+    }
+
+    # ── Actuator health ───────────────────────────────────────────────────────
+    location /actuator/ {
+        proxy_pass         http://${API_HOST}/actuator/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+    }
+
+    # ── React Router SPA fallback ─────────────────────────────────────────────
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
