@@ -2,7 +2,10 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { message } from 'antd'
 import { useAuthStore } from '@/store/authStore'
 
-const BASE_URL = '/api'
+// VITE_API_BASE_URL: full origin of the API server (e.g. https://api.example.com).
+// Unset in local dev → relative /api path through nginx.
+// Set in Railway → direct call to the API's public URL (bypasses nginx proxy).
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL ?? ''}/api`
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
