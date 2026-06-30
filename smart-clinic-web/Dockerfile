@@ -30,4 +30,4 @@ EXPOSE 80
 
 # Substitute ${API_HOST} in the nginx template at startup, then launch nginx.
 # Only ${API_HOST} is substituted — nginx's own $variables are left untouched.
-CMD ["/bin/sh", "-c", "envsubst '${API_HOST}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["/bin/sh", "-c", "envsubst '${API_HOST} ${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
