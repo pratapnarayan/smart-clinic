@@ -43,7 +43,7 @@ class FrontOfficeServiceCheckInTest {
     @Test
     void checkIn_throwsNotFound_whenAppointmentDoesNotExist() {
         UUID id = UUID.randomUUID();
-        given(appointmentRepository.findById(id)).willReturn(Optional.empty());
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.checkIn(id, null))
                 .isInstanceOf(ApiException.class)
@@ -56,11 +56,11 @@ class FrontOfficeServiceCheckInTest {
     void checkIn_throwsAlreadyCheckedIn_whenStatusIsCheckedIn() {
         UUID id = UUID.randomUUID();
         Appointment apt = buildAppointment(id, AppointmentStatus.CHECKED_IN);
-        given(appointmentRepository.findById(id)).willReturn(Optional.of(apt));
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.of(apt));
 
         assertThatThrownBy(() -> service.checkIn(id, null))
                 .isInstanceOf(ApiException.class)
-                .hasMessageContaining("ALREADY_CHECKED_IN");
+                .hasMessageContaining("already checked in");
 
         verify(opdService, never()).createVisit(any());
     }
@@ -69,11 +69,11 @@ class FrontOfficeServiceCheckInTest {
     void checkIn_throwsAppointmentClosed_whenStatusIsCancelled() {
         UUID id = UUID.randomUUID();
         Appointment apt = buildAppointment(id, AppointmentStatus.CANCELLED);
-        given(appointmentRepository.findById(id)).willReturn(Optional.of(apt));
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.of(apt));
 
         assertThatThrownBy(() -> service.checkIn(id, null))
                 .isInstanceOf(ApiException.class)
-                .hasMessageContaining("APPOINTMENT_CLOSED");
+                .hasMessageContaining("Cannot check in a CANCELLED appointment");
 
         verify(opdService, never()).createVisit(any());
     }
@@ -82,11 +82,11 @@ class FrontOfficeServiceCheckInTest {
     void checkIn_throwsAppointmentClosed_whenStatusIsCompleted() {
         UUID id = UUID.randomUUID();
         Appointment apt = buildAppointment(id, AppointmentStatus.COMPLETED);
-        given(appointmentRepository.findById(id)).willReturn(Optional.of(apt));
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.of(apt));
 
         assertThatThrownBy(() -> service.checkIn(id, null))
                 .isInstanceOf(ApiException.class)
-                .hasMessageContaining("APPOINTMENT_CLOSED");
+                .hasMessageContaining("Cannot check in a COMPLETED appointment");
 
         verify(opdService, never()).createVisit(any());
     }
@@ -95,11 +95,11 @@ class FrontOfficeServiceCheckInTest {
     void checkIn_throwsAppointmentClosed_whenStatusIsNoShow() {
         UUID id = UUID.randomUUID();
         Appointment apt = buildAppointment(id, AppointmentStatus.NO_SHOW);
-        given(appointmentRepository.findById(id)).willReturn(Optional.of(apt));
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.of(apt));
 
         assertThatThrownBy(() -> service.checkIn(id, null))
                 .isInstanceOf(ApiException.class)
-                .hasMessageContaining("APPOINTMENT_CLOSED");
+                .hasMessageContaining("Cannot check in a NO_SHOW appointment");
 
         verify(opdService, never()).createVisit(any());
     }
@@ -108,7 +108,7 @@ class FrontOfficeServiceCheckInTest {
     void checkIn_updatesStatusAndCreatesVisit_forConfirmedAppointment() {
         UUID id = UUID.randomUUID();
         Appointment apt = buildAppointment(id, AppointmentStatus.CONFIRMED);
-        given(appointmentRepository.findById(id)).willReturn(Optional.of(apt));
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.of(apt));
         given(appointmentRepository.save(apt)).willReturn(apt);
 
         OpdVisitResponse mockVisit = buildMockVisitResponse(id);
@@ -133,7 +133,7 @@ class FrontOfficeServiceCheckInTest {
     void checkIn_acceptsOptionalSymptoms_fromCheckInRequest() {
         UUID id = UUID.randomUUID();
         Appointment apt = buildAppointment(id, AppointmentStatus.SCHEDULED);
-        given(appointmentRepository.findById(id)).willReturn(Optional.of(apt));
+        given(appointmentRepository.findByIdForUpdate(id)).willReturn(Optional.of(apt));
         given(appointmentRepository.save(apt)).willReturn(apt);
         given(opdService.createVisit(any())).willReturn(buildMockVisitResponse(id));
 
