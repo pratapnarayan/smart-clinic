@@ -1,6 +1,8 @@
-# SmartClinic — Hospital Management System
+# SmartClinic — Clinic Management Platform
 
-A full-stack, modular-monolith clinic and hospital management platform built with **Spring Boot 3** and **React 19**. SmartClinic covers every stage of a patient's journey — from front office appointment booking and OPD check-in, through consultation and prescriptions, pharmacy dispensing, inpatient care, pathology and radiology orders, right up to discharge and billing — with a unified analytics layer across all modules.
+A full-stack clinic management platform built with **Spring Boot 3** and **React 19**. SmartClinic covers a clinic's outpatient journey — front office appointment booking and OPD check-in, consultation and prescriptions, pharmacy dispensing, pathology orders and home sample collection, right up to visit billing — with a unified analytics layer across all modules.
+
+> **Scope note:** This codebase is multi-tenant and also supports a larger `FULL` (hospital-scale) tenant type with additional modules — Doctor Directory, IPD, Radiology, Finance, Inventory, Blood Bank, and Operation Theatre. This document only covers the `CLINIC_OPD` tenant configuration, which is what this project is actually run as. The other modules exist in the codebase (see `smart-clinic-api/src/main/java/com/smartclinic/modules/`) but are out of scope here.
 
 ---
 
@@ -11,18 +13,11 @@ A full-stack, modular-monolith clinic and hospital management platform built wit
   - [Front Office & Appointments](#1-front-office--appointments)
   - [Patient Management](#2-patient-management)
   - [OPD — Outpatient Department](#3-opd--outpatient-department)
-  - [Doctor Directory & Scheduling](#4-doctor-directory--scheduling)
-  - [Pharmacy](#5-pharmacy)
-  - [IPD — Inpatient Department](#6-ipd--inpatient-department)
-  - [Pathology](#7-pathology)
-  - [Radiology](#8-radiology)
-  - [HR & Attendance](#9-hr--attendance)
-  - [Finance](#10-finance)
-  - [Inventory](#11-inventory)
-  - [Blood Bank](#12-blood-bank)
-  - [Operation Theatre](#13-operation-theatre)
-  - [SmartClinic Mode (Clinic OPD)](#14-smartclinic-mode-clinic-opd)
-  - [Reports & Analytics](#15-reports--analytics)
+  - [Pharmacy](#4-pharmacy)
+  - [Pathology](#5-pathology)
+  - [HR & Attendance](#6-hr--attendance)
+  - [Home Collections & Visit Bills](#7-home-collections--visit-bills)
+  - [Reports & Analytics](#8-reports--analytics)
 - [Access Control & Roles](#access-control--roles)
 - [Multi-Tenancy](#multi-tenancy)
 - [Architecture Overview](#architecture-overview)
@@ -42,7 +37,7 @@ A full-stack, modular-monolith clinic and hospital management platform built wit
 
 ## Who It Is For
 
-SmartClinic is designed for **clinics, polyclinics, and small-to-mid-size hospitals** that need a single platform to manage their front desk, clinical workflows, support departments, and finances. It runs as a multi-tenant SaaS application — each hospital gets its own isolated data schema — and ships with a tenant-aware sidebar that shows only the modules relevant to the clinic type.
+SmartClinic is designed for **clinics and polyclinics** that need a single platform to manage their front desk, OPD consultations, pharmacy, and pathology — without the overhead of inpatient wards, operation theatres, or a separate finance/inventory back office. It runs as a multi-tenant SaaS application — each clinic gets its own isolated data schema — with a tenant-aware sidebar that shows only the modules a clinic actually needs.
 
 ---
 
@@ -79,7 +74,7 @@ The front office is the first touchpoint for every patient. SmartClinic provides
 - **Quick registration** — Name, mobile, gender, date of birth; single-name patients use `LNU` (Last Name Unknown) as the last name
 - **Full registration** — Address, blood group, emergency contact, allergies, ID number
 - **Full-text search** — PostgreSQL `tsvector` index on name, mobile, and email; search returns instant results as the user types
-- **Patient profile** — Demographics, upcoming appointments, recent OPD visits, active IPD admission (if any)
+- **Patient profile** — Demographics, upcoming appointments, recent OPD visits
 - **Soft delete** — Records are deactivated, never hard-deleted
 
 ---
@@ -90,7 +85,7 @@ Every outpatient consultation is captured as an OPD visit regardless of whether 
 
 **Visit management**
 - Visit source tracked: `APPOINTMENT` (created via check-in) or `WALK_IN` (created directly)
-- Walk-in visits capture doctor by UUID (doctor directory integration) — doctor name is stored as a denormalised snapshot for display
+- Walk-in visits capture the consulting doctor by employee ID (see [HR & Attendance](#6-hr--attendance)) — doctor name is stored as a denormalised snapshot for display
 - Auto-generated visit numbers
 - Visit status: `REGISTERED → IN_PROGRESS → COMPLETED / CANCELLED`
 
@@ -111,18 +106,7 @@ Every outpatient consultation is captured as an OPD visit regardless of whether 
 
 ---
 
-### 4. Doctor Directory & Scheduling
-
-- Doctor profiles with specialization, qualification, experience, consultation fee, and profile photo
-- Specialization catalogue (managed by admin)
-- Availability slots — define working hours and days per doctor
-- Slot conflict detection — blocks double-booking
-- Doctor photo upload (stored server-side, served via `/api/doctors/{id}/photo`)
-- Doctor analytics: consultations per doctor, revenue attribution, top performers
-
----
-
-### 5. Pharmacy
+### 4. Pharmacy
 
 - **Medicine catalogue** — Name, category, formulation, unit, HSN code, GST rate
 - **Stock batches** — Batch number, expiry date, purchase price, MRP, quantity; multiple batches per medicine
@@ -132,114 +116,49 @@ Every outpatient consultation is captured as an OPD visit regardless of whether 
 
 ---
 
-### 6. IPD — Inpatient Department
-
-- **Wards and beds** — Ward type (General / Semi-Private / Private / ICU), bed count per ward, bed-level status (Available / Occupied / Under Maintenance)
-- **Admissions** — Admit a patient to a specific bed, record diagnosis and treating doctor
-- **Daily charges** — Log per-day charges (room, nursing, procedure) against an admission
-- **Discharge** — Release bed, record discharge summary and final diagnosis
-- **Bed occupancy** — Real-time bed count visible on the executive dashboard
-
----
-
-### 7. Pathology
+### 5. Pathology
 
 - **Test catalogue** — Categories (Haematology, Biochemistry, Microbiology, …) and individual tests with reference ranges and units
-- **Lab orders** — Order one or more tests for a patient, linked to an OPD visit or IPD admission
+- **Lab orders** — Order one or more tests for a patient, linked to an OPD visit
 - **Sample collection** — Mark samples collected; record collection time and collector
 - **Results entry** — Enter result values per test; mark order as `COMPLETED`
 - **Pathology analytics** — Order volume, pending vs. completed ratio, revenue by test category, turnaround time
 
 ---
 
-### 8. Radiology
-
-- **Modality catalogue** — X-Ray, CT, MRI, Ultrasound, etc., with base rates
-- **Studies** — Each study is linked to a modality, patient, and optional referral
-- **Orders** — Raise a radiology order; track status from `ORDERED → IN_PROGRESS → REPORTED`
-- **Reports** — Attach findings and impression text; mark report as verified
-
----
-
-### 9. HR & Attendance
+### 6. HR & Attendance
 
 - **Departments and designations** — Organisational hierarchy
 - **Employee records** — Personal details, designation, department, joining date, profile photo, salary
+- **Consulting doctors are employee records** — a clinic's doctor(s) are managed as HR employees rather than through a separate doctor-directory module, and are selected from the employee list when creating a walk-in OPD visit
 - **Attendance** — Mark daily attendance (Present / Absent / Half Day / On Leave)
 - **Leave management** — Leave types, leave applications, approval workflow (Pending → Approved / Rejected)
 - **Employee directory** — Search by name, department, or designation
 
 ---
 
-### 10. Finance
+### 7. Home Collections & Visit Bills
 
-- **Income entries** — Categorised revenue records (OPD, IPD, Pharmacy, Lab, Radiology, Other)
-- **Expense entries** — Categorised expense records with descriptions and amounts
-- **Finance dashboard** — Month-to-date income, expenses, and net income at a glance
-- **Financial analytics** — Revenue breakdown by category, expense trends, net income chart, month-over-month comparison, one-click Excel/PDF export
-
----
-
-### 11. Inventory
-
-- **Item categories** — Group consumables, equipment, and general supplies
-- **Item catalogue** — Item name, category, unit, reorder level, current stock
-- **Stock receipts** — Record incoming stock with vendor, date, quantity, and unit cost
-- **Stock issues** — Issue items to departments; deducts from current stock
-- **Low-stock alerts** — Items below reorder level highlighted in the item list
-- **Inventory analytics** — Consumption trend, category-wise usage, reorder summary
-
----
-
-### 12. Blood Bank
-
-- **Donor registration** — Blood group, contact details, last donation date
-- **Blood unit lifecycle** — `PENDING_TESTING → AVAILABLE → ISSUED / EXPIRED / DISCARDED`
-- **Requests** — Blood group and quantity requests linked to a patient or department
-- **FEFO issue** — Issues the oldest available units first to minimise wastage
-- **Compatibility check** — Request validation against available units by blood group
-
----
-
-### 13. Operation Theatre
-
-- **OT catalogue** — Theatre name, type, capacity, equipment list
-- **Schedules** — Book a patient for a procedure with surgeon, anaesthetist, and start/end time
-- **Status flow** — `SCHEDULED → IN_PROGRESS → COMPLETED / CANCELLED`
-- **Post-operative records** — Surgeon's notes, anaesthesia type, complications, outcome
-- **Consumable deduction** — Deduct inventory items used during the procedure against the schedule
-
----
-
-### 14. SmartClinic Mode (Clinic OPD)
-
-Smaller clinics that do not need IPD, Blood Bank, Radiology, or Operation Theatre can be provisioned as `CLINIC_OPD` tenant type. In this mode:
-
-- The sidebar shows only the relevant modules: Dashboard, Patients, OPD, Front Office, Pathology, Pharmacy, HR, and Analytics
-- All other modules are hidden — no dead links or empty pages
 - **Home Collections** — Schedule pathology sample collection at a patient's home address; assign a technician and track collection status
 - **Visit Bills** — Consolidated billing for a clinic visit (consultation + tests + medicines)
 
 ---
 
-### 15. Reports & Analytics
+### 8. Reports & Analytics
 
-A dedicated cross-cutting analytics layer aggregates data from all modules into interactive dashboards. Every page supports configurable date ranges with quick-select presets (Last 7 days / 30 days / 90 days / Custom).
+A dedicated cross-cutting analytics layer aggregates data from clinic modules into interactive dashboards. Every page supports configurable date ranges with quick-select presets (Last 7 days / 30 days / 90 days / Custom).
 
 | Dashboard | What It Shows |
 |---|---|
-| **Executive Dashboard** | Revenue vs. expenses, total patients, OPD visits, bed occupancy, top doctors |
-| **Financial Analytics** | Revenue by category, expense trends, net income chart, month-over-month comparison |
+| **Executive Dashboard** | Revenue, total patients, OPD visits |
 | **Patient Analytics** | New vs. returning, registration trend, gender and age distribution, blood group breakdown |
-| **Doctor Analytics** | Consultations per doctor, revenue attribution, specialization breakdown, top performers |
 | **Appointment Analytics** | Booking trend, cancellation rate, peak-hour heatmap, doctor-wise counts |
 | **Pharmacy Analytics** | Top-selling medicines, dispensing revenue, stock movement, category-wise sales |
 | **Laboratory Analytics** | Test volume, pending vs. completed ratio, revenue by category, turnaround time |
-| **Inventory Analytics** | Stock level alerts, consumption trend, category-wise usage, reorder summary |
 
 **Export** — Every dashboard has one-click export:
 - **Excel (XLSX)** — Multi-sheet workbook: KPI summary, trend data, breakdown tables; styled with branded headers and formatted cells
-- **PDF** — KPI grid, bar chart data, and trend tables via iText 7; downloaded through the API client so the JWT Authorization header is sent correctly
+- **PDF** — KPI grid, bar chart data, and trend tables via OpenPDF; downloaded through the API client so the JWT Authorization header is sent correctly
 
 **Demo mode** — Append `?demo=true` to any analytics URL to load demo data without a backend connection.
 
@@ -253,32 +172,25 @@ Every JWT carries a `role` claim and a granular `permissions` claim. The backend
 |------|---------------|
 | `SUPER_ADMIN` | Platform management (tenant provisioning) only |
 | `ADMIN` | Full access to all modules within their tenant |
-| `DOCTOR` | Patient, OPD, IPD, Pathology, Radiology, Operation Theatre |
-| `NURSE` | Patient (read), OPD (read), Pathology / Radiology (read), OT (read) |
+| `DOCTOR` | Patient, OPD, Pathology |
+| `NURSE` | Patient (read), OPD (read), Pathology (read) |
 | `PHARMACIST` | Patient (read), Pharmacy |
 | `RECEPTIONIST` | Patient (create/read), Front Office |
-| `ACCOUNTANT` | Finance, Reports |
 | `PATHOLOGIST` | Patient (read), Pathology (full) |
-| `RADIOLOGIST` | Patient (read), Radiology (full) |
-| `CLINIC_TECHNICIAN` | Home Collections (CLINIC_OPD tenants) |
+| `CLINIC_TECHNICIAN` | Home Collections |
 | `PATIENT` | Own records only |
 
 **Permission format** — `MODULE.ACTION`:
 
 ```
 PATIENT.VIEW      PATIENT.CREATE     PATIENT.EDIT
-DOCTOR.VIEW       DOCTOR.MANAGE
 OPD.VIEW          OPD.CREATE         OPD.EDIT
 FRONTOFFICE.VIEW  FRONTOFFICE.CREATE FRONTOFFICE.EDIT
 PHARMACY.VIEW     PHARMACY.CREATE
-IPD.VIEW          IPD.CREATE         IPD.EDIT         IPD.MANAGE
 HR.VIEW           HR.CREATE          HR.EDIT          HR.MANAGE
 PATHOLOGY.VIEW    PATHOLOGY.CREATE   PATHOLOGY.EDIT   PATHOLOGY.MANAGE
-RADIOLOGY.VIEW    RADIOLOGY.CREATE   RADIOLOGY.EDIT   RADIOLOGY.MANAGE
-FINANCE.VIEW      FINANCE.CREATE     FINANCE.MANAGE
-INVENTORY.VIEW    INVENTORY.CREATE   INVENTORY.MANAGE
-BLOODBANK.VIEW    BLOODBANK.CREATE   BLOODBANK.EDIT
-OPERATION.VIEW    OPERATION.CREATE   OPERATION.EDIT   OPERATION.MANAGE
+CLINIC.BILL.VIEW             CLINIC.BILL.CREATE            CLINIC.BILL.MANAGE
+CLINIC.HOME_COLLECTION.VIEW  CLINIC.HOME_COLLECTION.CREATE  CLINIC.HOME_COLLECTION.EDIT
 REPORTS.VIEW
 ```
 
@@ -290,12 +202,12 @@ REPORTS.VIEW
 
 SmartClinic uses **schema-per-tenant** isolation on a single PostgreSQL database.
 
-- Each hospital gets its own PostgreSQL schema (e.g. `hospital_001`, `hospital_002`)
+- Each clinic gets its own PostgreSQL schema (e.g. `clinic_001`, `clinic_002`)
 - The tenant is resolved from the `tenant_id` claim embedded in the JWT — no extra DB call per request
 - A `TenantAwareDataSource` JDBC proxy sets `search_path = <tenantId>` on every connection before executing queries
 - Cross-tenant data access is architecturally impossible — queries cannot leak between schemas
 
-Tenant type (`FULL` or `CLINIC_OPD`) is stored per tenant and controls which sidebar modules are shown.
+Tenant type is stored per tenant (`CLINIC_OPD` for this document's scope) and controls which sidebar modules are shown.
 
 ---
 
@@ -315,17 +227,17 @@ Tenant type (`FULL` or `CLINIC_OPD`) is stored per tenant and controls which sid
 │                                                                   │
 │  Filter chain:  TenantFilter → JwtAuthFilter → Spring Security   │
 │                                                                   │
-│  Modules (domain / dto / repository / service / controller):     │
-│  auth · patient · doctor · opd · pharmacy · ipd · frontoffice   │
-│  hr · pathology · radiology · finance · inventory · bloodbank   │
-│  operation · setup · analytics · clinic                          │
+│  Modules used by CLINIC_OPD tenants:                              │
+│  (domain / dto / repository / service / controller each)         │
+│  auth · patient · opd · pharmacy · frontoffice · hr · pathology  │
+│  setup · analytics · clinic                                      │
 └────────────────────────────┬────────────────────────────────────┘
                              │ JDBC  (search_path per tenant)
 ┌────────────────────────────▼────────────────────────────────────┐
 │                  PostgreSQL 16                                    │
 │   public schema   →  tenant registry + super-admin users         │
-│   hospital_001    →  all clinical & operational tables           │
-│   hospital_002    →  same tables, fully isolated data            │
+│   clinic_001      →  all clinical & operational tables           │
+│   clinic_002      →  same tables, fully isolated data            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -353,10 +265,9 @@ Tenant type (`FULL` or `CLINIC_OPD`) is stored per tenant and controls which sid
 | Migrations | Flyway 10 |
 | Build | Maven 3 |
 | API Docs | SpringDoc OpenAPI 2.6 (Swagger UI) |
-| Rate Limiting | Bucket4j 8.10 |
-| Metrics | Micrometer + Prometheus |
+| Metrics | Micrometer, exposed via `/actuator/metrics` (`health`, `info`, `metrics` only — Prometheus format not currently enabled) |
 | Excel Export | Apache POI 5.2.5 |
-| PDF Export | iText 7 |
+| PDF Export | OpenPDF |
 
 ### Frontend (`smart-clinic-web/`)
 
@@ -389,20 +300,13 @@ Tenant type (`FULL` or `CLINIC_OPD`) is stored per tenant and controls which sid
 
 ### Database Setup
 
-Run the provided SQL script once as the PostgreSQL superuser:
+Run the provided SQL script once as the PostgreSQL superuser, to create the `smartclinic` database:
 
 ```bash
 psql -U postgres -f smart-clinic-api/scripts/db-setup-dev.sql
 ```
 
-This creates the `smartclinic` database and the `hospital_001` schema. Flyway creates all tables on first application startup.
-
-To add a second tenant schema:
-
-```sql
-\c smartclinic
-CREATE SCHEMA IF NOT EXISTS hospital_002;
-```
+You do **not** need to create a schema by hand for clinic development — on first startup with the `dev` profile active, `ClinicDevDataSeeder` provisions the `clinic_001` schema itself and runs Flyway migrations into it automatically.
 
 ### Backend Setup
 
@@ -420,7 +324,7 @@ No extra configuration is needed for local development — the `dev` profile use
 | DB Password | `postgres` |
 | JWT Secret | `dev-secret-key-change-in-prod-min32c` |
 
-On first startup, Flyway runs all migrations and `DevDataSeeder` creates sample data and default users.
+On first startup, Flyway runs the `public`-schema migrations and `ClinicDevDataSeeder` creates the `clinic_001` tenant with sample data and default users.
 
 ### Frontend Setup
 
@@ -442,16 +346,15 @@ npm run preview  # Preview the production build locally
 
 ## Default Dev Credentials
 
-> Created automatically by `DevDataSeeder` on first startup (dev profile only).
+> Created automatically by `ClinicDevDataSeeder` on first startup (`dev` profile only), tenant `clinic_001`.
 
-### Tenant Admin
-
-| Field | Value |
-|-------|-------|
-| Email | `admin@hospital001.com` |
-| Password | `Admin@1234` |
-| Tenant ID | `hospital_001` |
-| Access | All modules |
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@clinic001.com` | `Admin@1234` |
+| Doctor | `doctor@clinic001.com` | `Doctor@1234` |
+| Receptionist | `receptionist@clinic001.com` | `Recept@1234` |
+| Pathologist | `pathologist@clinic001.com` | `Path@1234` |
+| Clinic Technician | `technician@clinic001.com` | `Tech@1234` |
 
 ### Super Admin
 
@@ -476,6 +379,8 @@ Raw OpenAPI spec: **http://localhost:8080/v3/api-docs**
 
 ## Flyway Migration History
 
+Migrations run against every tenant schema (including `clinic_001`), so tables for modules outside this document's scope (IPD, Radiology, Finance, Inventory, Blood Bank, Operation Theatre, Doctor Directory) do exist in the schema even though the clinic UI doesn't surface them.
+
 | Version | Description |
 |---------|-------------|
 | V1 | Tenant registry (`public.tenants`, `public.super_admin_users`) |
@@ -497,8 +402,8 @@ Raw OpenAPI spec: **http://localhost:8080/v3/api-docs**
 | V17 | Doctor tables (profiles, specializations, availability slots) |
 | V18 | Profile photo column on employees |
 | V19 | `clinic_type` column on tenants (`FULL` / `CLINIC_OPD`) |
-| V20 | SmartClinic home collection tables |
-| V21 | SmartClinic visit bill tables |
+| V20 | Home collection tables |
+| V21 | Visit bill tables |
 | V22 | `CLINIC_TECHNICIAN` role |
 | V23 | `appointment_id` and `visit_source` on OPD visits; partial unique index on `appointment_id` |
 
